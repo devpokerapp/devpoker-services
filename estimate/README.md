@@ -6,5 +6,5 @@
 
 ```bash
 pip install -r requirements.txt
-nameko run main
+nameko run src.main
 ```
