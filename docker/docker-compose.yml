@@ -1,0 +1,33 @@
+version: "3"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: devpoker-rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - devpoker-network
+  
+  estimate:
+    image: devpoker-estimate
+    container_name: devpoker-estimate
+    build:
+      context: ../estimate
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    environment:
+      - RABBIT_PASSWORD=guest
+      - RABBIT_USER=guest
+      - RABBIT_HOST=rabbitmq
+      - RABBIT_PORT=5672
+      - RABBIT_MANAGEMENT_PORT=15672
+    depends_on:
+      - rabbitmq
+
+networks:
+  devpoker-network:
+    name: devpoker-network
+    external: false
