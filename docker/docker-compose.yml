@@ -4,6 +4,11 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: devpoker-rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 30s
+      timeout: 30s
+      retries: 10
     ports:
       - 5672:5672
       - 15672:15672
@@ -16,16 +21,19 @@ services:
     build:
       context: ../estimate
       dockerfile: Dockerfile
-    ports:
-      - 8000:8000
     environment:
       - RABBIT_PASSWORD=guest
       - RABBIT_USER=guest
       - RABBIT_HOST=rabbitmq
       - RABBIT_PORT=5672
       - RABBIT_MANAGEMENT_PORT=15672
+    ports:
+      - 8000:8000
+    networks:
+      - devpoker-network
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
 
 networks:
   devpoker-network:
