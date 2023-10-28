@@ -9,4 +9,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD [ "nameko", "run", "src.main" ]
+CMD [ "sh", "entrypoint.sh" ]
