@@ -15,6 +15,26 @@ services:
     networks:
       - devpoker-network
   
+  gateway:
+    image: devpoker-gateway
+    container_name: devpoker-gateway
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    environment:
+      - RABBIT_PASSWORD=guest
+      - RABBIT_USER=guest
+      - RABBIT_HOST=rabbitmq
+      - RABBIT_PORT=5672
+      - RABBIT_MANAGEMENT_PORT=15672
+    ports:
+      - 8000:8000
+    networks:
+      - devpoker-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+  
   estimate:
     image: devpoker-estimate
     container_name: devpoker-estimate
@@ -27,8 +47,6 @@ services:
       - RABBIT_HOST=rabbitmq
       - RABBIT_PORT=5672
       - RABBIT_MANAGEMENT_PORT=15672
-    ports:
-      - 8000:8000
     networks:
       - devpoker-network
     depends_on:
