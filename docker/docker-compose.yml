@@ -15,6 +15,28 @@ services:
     networks:
       - devpoker-network
   
+  adminer:
+    image: adminer
+    container_name: devpoker-adminer
+    ports:
+      - 8080:8080
+    networks:
+      - devpoker-network
+  
+  db:
+    image: postgres:13
+    container_name: devpoker-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - devpoker-db-volume:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - devpoker-network
+  
   gateway:
     image: devpoker-gateway
     container_name: devpoker-gateway
@@ -57,3 +79,7 @@ networks:
   devpoker-network:
     name: devpoker-network
     external: false
+
+volumes:
+  devpoker-db-volume:
+    name: devpoker-db-volume
