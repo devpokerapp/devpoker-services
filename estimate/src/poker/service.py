@@ -1,5 +1,8 @@
 from nameko.rpc import rpc, RpcProxy
 from nameko.events import EventDispatcher, event_handler
+from poker.models import Poker
+from story.models import Story
+from event.models import Event
 
 
 class PokerService:

@@ -70,7 +70,7 @@ def upgrade() -> None:
 
     op.add_column("events", sa.Column("story_id", sa.Uuid(), nullable=False))
     op.create_foreign_key(
-        "fk_events_current_story_id",
+        "fk_events_story_id",
         "events",
         "stories",
         ["story_id"],

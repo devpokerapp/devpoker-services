@@ -7,7 +7,8 @@ from sqlalchemy.ext.declarative import declarative_base
 class Base(object):
     id = Column(
         Uuid,
-        nullable=False
+        nullable=False,
+        primary_key=True
     )
     created_at = Column(
         DateTime,
