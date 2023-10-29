@@ -25,7 +25,8 @@ class GatewayService:
 
         service_rpc = services.get(service)
         method_inst = getattr(service_rpc, method)
-        method_inst(sid, **data)
+        result = method_inst(sid=sid, **data)
+        return result
 
     @rpc
     def unicast(self, sid, event, data):
