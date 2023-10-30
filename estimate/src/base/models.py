@@ -1,14 +1,16 @@
 import datetime
+import uuid
 
 from sqlalchemy import Column, DateTime, Uuid
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 
 class Base(object):
     id = Column(
         Uuid,
         nullable=False,
-        primary_key=True
+        primary_key=True,
+        default=uuid.uuid4
     )
     created_at = Column(
         DateTime,

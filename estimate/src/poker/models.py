@@ -13,6 +13,7 @@ class Poker(DeclarativeBase):
 
     current_story_id = Column(
         Uuid(),
-        ForeignKey("stories.id", name="fk_pokers_current_story_id"),
-        nullable=False
+        # FIXME: foreign key causing circular import
+        # ForeignKey("stories.id", name="fk_pokers_current_story_id"),
+        nullable=True
     )
