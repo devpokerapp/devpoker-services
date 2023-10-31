@@ -1,9 +1,9 @@
 from sqlalchemy import Column, String, Uuid, ForeignKey
 from sqlalchemy.orm import relationship
-from base.models import DeclarativeBase
+from base.models import Model
 
 
-class Poker(DeclarativeBase):
+class Poker(Model):
     __tablename__ = "pokers"
 
     creator = Column(

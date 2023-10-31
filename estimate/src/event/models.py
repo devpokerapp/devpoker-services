@@ -1,10 +1,10 @@
 from sqlalchemy import Column, String, Boolean, Uuid, ForeignKey
 from sqlalchemy.orm import relationship
-from base.models import DeclarativeBase
+from base.models import Model
 from story.models import Story
 
 
-class Event(DeclarativeBase):
+class Event(Model):
     __tablename__ = "events"
 
     type = Column(

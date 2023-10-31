@@ -1,10 +1,10 @@
 from sqlalchemy import Column, String, Uuid, ForeignKey
 from sqlalchemy.orm import relationship
-from base.models import DeclarativeBase
+from base.models import Model
 from poker.models import Poker
 
 
-class Story(DeclarativeBase):
+class Story(Model):
     __tablename__ = "stories"
 
     name = Column(

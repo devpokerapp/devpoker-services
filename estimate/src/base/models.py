@@ -4,8 +4,12 @@ import uuid
 from sqlalchemy import Column, DateTime, Uuid
 from sqlalchemy.orm import declarative_base
 
+DeclarativeBase = declarative_base()
 
-class Base(object):
+
+class Model(DeclarativeBase):
+    __abstract__ = True
+
     id = Column(
         Uuid,
         nullable=False,
@@ -23,6 +27,3 @@ class Base(object):
         onupdate=datetime.datetime.utcnow,
         nullable=False
     )
-
-
-DeclarativeBase = declarative_base(cls=Base)
