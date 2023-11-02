@@ -3,12 +3,13 @@ import json
 from nameko.rpc import rpc, RpcProxy
 from nameko.events import EventDispatcher, event_handler
 from nameko_sqlalchemy import DatabaseSession
+from sqlalchemy.orm import Session
 from base.models import DeclarativeBase
+from base.exceptions import NotFound
 from poker.models import Poker
 from story.models import Story
 from event.models import Event
 from poker.schemas import PokerCreate, PokerRead
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -17,16 +18,29 @@ logger.setLevel(logging.DEBUG)
 class PokerService:
     name = "poker_service"
 
-    db = DatabaseSession(DeclarativeBase)
+    db: Session = DatabaseSession(DeclarativeBase)
     gateway_rpc = RpcProxy('gateway_service')
     dispatch = EventDispatcher()
 
     @rpc
-    def get(self, sid, entity_id):
-        pass
+    def retrieve(self, sid, entity_id) -> PokerRead:
+        entity = self.db.query(Poker)\
+            .filter(Poker.id == entity_id)\
+            .first()
+
+        if entity is None:
+            raise NotFound()
+
+        result = PokerRead(**entity.to_dict())
+        result = result.model_dump_json()
+        result = json.loads(result)
+
+        self.gateway_rpc.unicast(sid, 'poker_retrieved', result)
+
+        return result
 
     @rpc
-    def create(self, sid, payload: dict):
+    def create(self, sid, payload: dict) -> PokerRead:
         dto = PokerCreate(**payload)
         entity = Poker(creator=dto.creator)
 
