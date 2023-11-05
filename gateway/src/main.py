@@ -1,5 +1,6 @@
 import logging
 from nameko.rpc import rpc, RpcProxy
+from nameko.exceptions import RemoteError
 from nameko.web.websocket import rpc as ws, WebSocketHub, WebSocketHubProvider
 
 logger = logging.getLogger(__name__)
@@ -23,10 +24,31 @@ class GatewayService:
 
         logger.debug(f'called {service}:{method} by {sid}')
 
+        result = None
+        error = None
+        success = False
+
         service_rpc = services.get(service)
         method_inst = getattr(service_rpc, method)
-        result = method_inst(sid=sid, **data)
-        return result
+
+        try:
+            result = method_inst(sid=sid, **data)
+            success = True
+        except RemoteError as exc:
+            logger.error(f'error caused when calling {service}:{method} by {sid}. exception: {exc.value}')
+            error = {
+                'exc_type': exc.exc_type,
+                'value': exc.value,
+                'args': exc.args,
+            }
+
+        return {
+            'success': success,
+            'service': service,
+            'method': method,
+            'result': result,
+            'error': error
+        }
 
     @rpc
     def unicast(self, sid, event, data):
