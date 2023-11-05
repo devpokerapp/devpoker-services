@@ -16,7 +16,7 @@ class GatewayService:
     story_rpc = RpcProxy("story_service")
 
     @ws
-    def request(self, sid, service, method, data):
+    def request(self, sid, service, method, data, transaction_id=None):
         services = {
             'poker_service': self.poker_rpc,
             'story_service': self.story_rpc
@@ -47,7 +47,8 @@ class GatewayService:
             'service': service,
             'method': method,
             'result': result,
-            'error': error
+            'error': error,
+            'transaction_id': transaction_id,
         }
 
     @rpc
