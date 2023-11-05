@@ -23,7 +23,7 @@ class PokerService:
     dispatch = EventDispatcher()
 
     @rpc
-    def retrieve(self, sid, entity_id) -> PokerRead:
+    def retrieve(self, sid, entity_id: str) -> PokerRead:
         entity = self.db.query(Poker)\
             .filter(Poker.id == entity_id)\
             .first()
@@ -31,9 +31,7 @@ class PokerService:
         if entity is None:
             raise NotFound()
 
-        result = PokerRead(**entity.to_dict())
-        result = result.model_dump_json()
-        result = json.loads(result)
+        result = PokerRead.to_json(entity)
 
         self.gateway_rpc.unicast(sid, 'poker_retrieved', result)
 
@@ -49,9 +47,7 @@ class PokerService:
 
         logger.debug(f'created poker entity! {entity.id}; {entity.to_dict()}')
 
-        result = PokerRead(**entity.to_dict())
-        result = result.model_dump_json()
-        result = json.loads(result)
+        result = PokerRead.to_json(entity)
 
         self.gateway_rpc.unicast(sid, 'poker_created', result)
         self.dispatch('poker_created', result)
