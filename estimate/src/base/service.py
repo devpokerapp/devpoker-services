@@ -77,6 +77,7 @@ class BaseService:
         result = self.dto_read.to_json(entity)
 
         self.gateway_rpc.unicast(sid, self.event_retrieved, result)
+        self.dispatch(self.event_retrieved, result)
 
         return result
 
@@ -124,6 +125,24 @@ class BaseService:
         return result
 
     @rpc
-    def delete(self, sid, entity_id) -> dict:
-        # TODO
-        pass
+    def delete(self, sid, entity_id: str) -> dict:
+        entity_id = UUID(entity_id)
+
+        old = self.db.query(self.model) \
+            .filter(self.model.id == entity_id) \
+            .first()
+
+        if old is None:
+            raise NotFound()
+
+        self.db.delete(old)
+        self.db.commit()
+
+        logger.debug(f'delete "{self.entity_name}" entity! {old.id}; {old.to_dict()}')
+
+        result = self.dto_read.to_json(old)
+
+        self.gateway_rpc.unicast(sid, self.event_deleted, result)
+        self.dispatch(self.event_deleted, result)
+
+        return result
