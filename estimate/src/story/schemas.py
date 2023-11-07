@@ -23,5 +23,4 @@ class StoryCreate(APIModel):
 
 
 class StoryUpdate(StoryCreate):
-    # TODO
     pass

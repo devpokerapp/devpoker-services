@@ -81,14 +81,14 @@ class BaseService:
         return result
 
     @rpc
-    def create(self, sid, payload) -> dict:
+    def create(self, sid, payload: dict) -> dict:
         dto = self.dto_create(**payload)
         entity = self.model(**dto.model_dump())
 
         self.db.add(entity)
         self.db.commit()
 
-        logger.debug(f'created entity! {entity.id}; {entity.to_dict()}')
+        logger.debug(f'created "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
 
         result = self.dto_read.to_json(entity)
 
@@ -98,9 +98,30 @@ class BaseService:
         return result
 
     @rpc
-    def update(self, sid, entity_id, payload) -> dict:
-        # TODO
-        pass
+    def update(self, sid, entity_id: str, payload: dict) -> dict:
+        entity_id = UUID(entity_id)
+
+        old = self.db.query(self.model)\
+            .filter(self.model.id == entity_id)\
+            .first()
+
+        if old is None:
+            raise NotFound()
+
+        dto = self.dto_update(**payload)
+        entity = self.model(**dto.model_dump())
+
+        self.db.add(entity)
+        self.db.commit()
+
+        logger.debug(f'update "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
+
+        result = self.dto_read.to_json(entity)
+
+        self.gateway_rpc.unicast(sid, self.event_updated, result)
+        self.dispatch(self.event_updated, result)
+
+        return result
 
     @rpc
     def delete(self, sid, entity_id) -> dict:
