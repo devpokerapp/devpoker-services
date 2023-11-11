@@ -1,11 +1,21 @@
-from nameko.rpc import rpc, RpcProxy
+from nameko.rpc import rpc
+
+from base.schemas import APIModel
+from base.service import BaseService
+from story.schemas import StoryRead, StoryCreate, StoryUpdate
+from story.models import Story
 
 
-class StoryService:
+class StoryService(BaseService):
     name = "story_service"
 
-    gateway_rpc = RpcProxy('gateway_service')
+    entity_name = 'story'
+    model = Story
+    dto_read = StoryRead
+    dto_create = StoryCreate
+    dto_update = StoryUpdate
 
     @rpc
-    def create(self, sid, channel: str, vote: str):
+    def vote(self, sid, channel: str, vote: str):
+        # TODO: move to EventService?
         self.gateway_rpc.broadcast(channel, 'vote', vote)
