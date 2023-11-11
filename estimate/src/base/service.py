@@ -102,17 +102,19 @@ class BaseService:
     def update(self, sid, entity_id: str, payload: dict) -> dict:
         entity_id = UUID(entity_id)
 
-        old = self.db.query(self.model)\
+        entity = self.db.query(self.model)\
             .filter(self.model.id == entity_id)\
             .first()
 
-        if old is None:
+        if entity is None:
             raise NotFound()
 
         dto = self.dto_update(**payload)
-        entity = self.model(**dto.model_dump())
+        values: dict = dto.model_dump()
 
-        self.db.add(entity)
+        for key, value in values.items():
+            setattr(entity, key, value)
+
         self.db.commit()
 
         logger.debug(f'update "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
