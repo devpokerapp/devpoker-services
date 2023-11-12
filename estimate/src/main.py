@@ -1,2 +1,3 @@
-from src.poker.service import PokerService
-from src.story.service import StoryService
+from poker.service import PokerService
+from story.service import StoryService
+from participant.service import ParticipantService
