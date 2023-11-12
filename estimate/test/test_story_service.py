@@ -20,7 +20,7 @@ def test_when_creating_story_should_return_as_dict(db_session):
     }
 
     service = worker_factory(StoryService, db=db_session)
-    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
@@ -33,7 +33,7 @@ def test_when_creating_story_should_return_as_dict(db_session):
     assert 'pokerId' in result
     assert type(result['pokerId']) is str
     assert result['pokerId'] == str(fake_poker_id)
-    service.gateway_rpc.unicast.assert_called_once()
+    service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
 
 
@@ -46,7 +46,7 @@ def test_when_creating_story_without_name_should_cause_error(db_session):
     }
 
     service = worker_factory(StoryService, db=db_session)
-    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
@@ -128,7 +128,7 @@ def test_when_updating_story_should_return_as_dict(db_session):
     db_session.commit()
 
     service = worker_factory(StoryService, db=db_session)
-    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
@@ -144,7 +144,7 @@ def test_when_updating_story_should_return_as_dict(db_session):
     assert 'pokerId' in result
     assert type(result['pokerId']) is str
     assert result['pokerId'] == str(fake_poker_id)
-    service.gateway_rpc.unicast.assert_called_once()
+    service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
 
 
@@ -160,7 +160,7 @@ def test_when_updating_non_existing_story_should_cause_not_found_error(db_sessio
     }
 
     service = worker_factory(StoryService, db=db_session)
-    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
@@ -181,7 +181,7 @@ def test_when_updating_story_with_non_uuid_string_should_cause_value_error(db_se
     }
 
     service = worker_factory(StoryService, db=db_session)
-    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
@@ -202,7 +202,7 @@ def test_when_deleting_story_should_return_as_dict(db_session):
     db_session.commit()
 
     service = worker_factory(StoryService, db=db_session)
-    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
@@ -218,7 +218,7 @@ def test_when_deleting_story_should_return_as_dict(db_session):
     assert 'pokerId' in result
     assert type(result['pokerId']) is str
     assert result['pokerId'] == str(fake_poker_id)
-    service.gateway_rpc.unicast.assert_called_once()
+    service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
 
 
@@ -229,7 +229,7 @@ def test_when_deleting_non_existing_story_should_cause_not_found_error(db_sessio
     fake_story_id = uuid.uuid4()
 
     service = worker_factory(StoryService, db=db_session)
-    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
@@ -245,7 +245,7 @@ def test_when_deleting_story_with_non_uuid_string_should_cause_value_error(db_se
     fake_story_id = 'arthur'
 
     service = worker_factory(StoryService, db=db_session)
-    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act

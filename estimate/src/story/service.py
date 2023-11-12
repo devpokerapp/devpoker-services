@@ -14,6 +14,11 @@ class StoryService(BaseService):
     dto_read = StoryRead
     dto_create = StoryCreate
     dto_update = StoryUpdate
+    broadcast_changes = True
+
+    def get_room_name(self, entity):
+        story: Story = entity
+        return str(story.poker_id)
 
     @rpc
     def vote(self, sid, channel: str, vote: str):

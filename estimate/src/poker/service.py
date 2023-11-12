@@ -20,3 +20,18 @@ class PokerService(BaseService):
     dto_update = PokerUpdate
 
     participant_rpc = RpcProxy("participant_service")
+
+    @rpc
+    def join(self, sid: str, name: str, poker_id: str):
+        participant = self.participant_rpc.create(sid, {
+            'name': name,
+            'pokerId': poker_id,
+            'sid': sid,
+        })
+
+        self.gateway_rpc.subscribe(sid, poker_id)
+
+        self.dispatch('poker_joined', participant)
+        self.gateway_rpc.broadcast(poker_id, 'poker_joined', participant)
+
+        return participant

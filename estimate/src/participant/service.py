@@ -14,3 +14,8 @@ class ParticipantService(BaseService):
     dto_read = ParticipantRead
     dto_create = ParticipantCreate
     dto_update = ParticipantUpdate
+    broadcast_changes = True
+
+    def get_room_name(self, entity):
+        participant: Participant = entity
+        return str(participant.poker_id)

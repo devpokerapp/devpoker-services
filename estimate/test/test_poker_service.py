@@ -57,7 +57,7 @@ def test_when_retrieving_poker_should_return_as_dict(db_session):
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
-    result = service.retrieve(fake_sid, fake_entity_id)
+    result = service.retrieve(fake_sid, str(fake_entity_id))
 
     # assert
     assert type(result) is dict
@@ -78,4 +78,4 @@ def test_when_retrieving_non_existing_poker_should_return_error(db_session):
     # act
     # assert
     with pytest.raises(NotFound):
-        result = service.retrieve(fake_sid, fake_entity_id)
+        result = service.retrieve(fake_sid, str(fake_entity_id))

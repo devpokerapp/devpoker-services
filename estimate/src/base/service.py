@@ -22,6 +22,8 @@ class BaseService:
     gateway_rpc = RpcProxy('gateway_service')
     dispatch = EventDispatcher()
 
+    broadcast_changes: bool = False
+
     @property
     @abstractmethod
     def entity_name(self) -> str:
@@ -63,6 +65,19 @@ class BaseService:
     def event_deleted(self):
         return f"{self.entity_name}_deleted"
 
+    @abstractmethod
+    def get_room_name(self, entity) -> str:
+        pass
+
+    def handle_propagate(self, sid, event: str, entity, payload: dict):
+        self.dispatch(event, payload)
+
+        if self.broadcast_changes:
+            room_name = self.get_room_name(entity)
+            self.gateway_rpc.broadcast(room_name, event, payload)
+        else:
+            self.gateway_rpc.unicast(sid, event, payload)
+
     @rpc
     def retrieve(self, sid, entity_id: str) -> dict:
         entity_id = UUID(entity_id)
@@ -93,8 +108,7 @@ class BaseService:
 
         result = self.dto_read.to_json(entity)
 
-        self.gateway_rpc.unicast(sid, self.event_created, result)
-        self.dispatch(self.event_created, result)
+        self.handle_propagate(sid, self.event_created, entity, result)
 
         return result
 
@@ -102,8 +116,8 @@ class BaseService:
     def update(self, sid, entity_id: str, payload: dict) -> dict:
         entity_id = UUID(entity_id)
 
-        entity = self.db.query(self.model)\
-            .filter(self.model.id == entity_id)\
+        entity = self.db.query(self.model) \
+            .filter(self.model.id == entity_id) \
             .first()
 
         if entity is None:
@@ -121,8 +135,7 @@ class BaseService:
 
         result = self.dto_read.to_json(entity)
 
-        self.gateway_rpc.unicast(sid, self.event_updated, result)
-        self.dispatch(self.event_updated, result)
+        self.handle_propagate(sid, self.event_updated, entity, result)
 
         return result
 
@@ -144,7 +157,6 @@ class BaseService:
 
         result = self.dto_read.to_json(old)
 
-        self.gateway_rpc.unicast(sid, self.event_deleted, result)
-        self.dispatch(self.event_deleted, result)
+        self.handle_propagate(sid, self.event_deleted, old, result)
 
         return result
