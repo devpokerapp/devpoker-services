@@ -14,12 +14,14 @@ class GatewayService:
 
     poker_rpc = RpcProxy("poker_service")
     story_rpc = RpcProxy("story_service")
+    participant_rpc = RpcProxy("participant_service")
 
     @ws
     def request(self, sid, service, method, data, transaction_id=None):
         services = {
             'poker_service': self.poker_rpc,
-            'story_service': self.story_rpc
+            'story_service': self.story_rpc,
+            'participant_service': self.participant_rpc
         }
 
         logger.debug(f'called {service}:{method} by {sid}')
