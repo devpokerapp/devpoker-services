@@ -1,9 +1,13 @@
+import logging
+
 from nameko.rpc import rpc
 
-from base.schemas import APIModel
 from base.service import BaseService
-from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate
 from participant.models import Participant
+from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class ParticipantService(BaseService):
@@ -19,3 +23,19 @@ class ParticipantService(BaseService):
     def get_room_name(self, entity):
         participant: Participant = entity
         return str(participant.poker_id)
+
+    @rpc
+    def create(self, sid, payload: dict) -> dict:
+        dto = self.dto_create(**payload)
+        entity = self.model(sid=sid, **dto.model_dump())
+
+        self.db.add(entity)
+        self.db.commit()
+
+        logger.debug(f'created "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
+
+        result = self.dto_read.to_json(entity)
+
+        self.handle_propagate(sid, self.event_created, entity, result)
+
+        return result

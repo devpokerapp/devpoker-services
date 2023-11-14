@@ -16,7 +16,7 @@ class ParticipantRead(APIModel):
 
 class ParticipantCreate(APIModel):
     name: str
-    sid: str
+    # sid: str # provided by gateway
     poker_id: UUID
 
 
