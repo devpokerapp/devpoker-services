@@ -22,12 +22,8 @@ class PokerService(BaseService):
     participant_rpc = RpcProxy("participant_service")
 
     @rpc
-    def join(self, sid: str, name: str, poker_id: str):
-        participant = self.participant_rpc.create(sid, {
-            'name': name,
-            'pokerId': poker_id,
-            'sid': sid,
-        })
+    def join(self, sid: str, participant_id: str, poker_id: str):
+        participant = self.participant_rpc.retrieve(sid, entity_id=participant_id)
 
         self.gateway_rpc.subscribe(sid, poker_id)
 
