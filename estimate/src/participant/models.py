@@ -20,3 +20,5 @@ class Participant(Model):
         ForeignKey("pokers.id", name="fk_stories_poker_id"),
         nullable=False
     )
+
+    # TODO: participant connection status

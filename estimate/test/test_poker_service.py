@@ -79,3 +79,7 @@ def test_when_retrieving_non_existing_poker_should_return_error(db_session):
     # assert
     with pytest.raises(NotFound):
         result = service.retrieve(fake_sid, str(fake_entity_id))
+
+# TODO: test join
+# TODO: test context
+# TODO: test select_story

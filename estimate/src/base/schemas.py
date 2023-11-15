@@ -17,20 +17,22 @@ class APIModel(BaseModel):
         return result
 
 
-class Filter(BaseModel):
-    attr: str
-    value: str
-
-
-class QueryMetadata(BaseModel):
-    filters: list
-
-
-class QueryRead(BaseModel):
-    items: list
-    metadata: QueryMetadata
-
+class SimpleModel(BaseModel):
     def to_json(self) -> dict:
         result = self.model_dump_json(by_alias=True)
         result = json.loads(result)
         return result
+
+
+class Filter(SimpleModel):
+    attr: str
+    value: str
+
+
+class QueryMetadata(SimpleModel):
+    filters: list
+
+
+class QueryRead(SimpleModel):
+    items: list
+    metadata: QueryMetadata
