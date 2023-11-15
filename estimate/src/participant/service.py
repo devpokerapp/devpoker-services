@@ -1,8 +1,10 @@
 import logging
+import typing
 
 from nameko.rpc import rpc
 
 from base.service import BaseService
+from base.converters import from_uuid
 from participant.models import Participant
 from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate
 
@@ -19,6 +21,11 @@ class ParticipantService(BaseService):
     dto_create = ParticipantCreate
     dto_update = ParticipantUpdate
     broadcast_changes = True
+
+    def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
+        return {
+            'poker_id': from_uuid
+        }
 
     def get_room_name(self, entity):
         participant: Participant = entity
