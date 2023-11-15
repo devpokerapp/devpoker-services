@@ -4,7 +4,7 @@ import pytest
 from nameko.testing.services import worker_factory
 from pydantic import ValidationError
 
-from base.exceptions import NotFound
+from base.exceptions import NotFound, InvalidFilter
 from poker.models import Poker
 from story.models import Story
 from story.service import StoryService
@@ -385,7 +385,7 @@ def test_when_querying_stories_from_poker_id_without_stories_should_return_empty
     service.dispatch.assert_called_once()
 
 
-def test_when_querying_stories_with_invalid_filter_should_return_empty_list(db_session):
+def test_when_querying_stories_with_empty_filter_should_return_empty_list(db_session):
     # arrange
     fake_sid = '1aaa'
     fake_poker_id1 = uuid.uuid4()
@@ -428,3 +428,37 @@ def test_when_querying_stories_with_invalid_filter_should_return_empty_list(db_s
     assert len(result['metadata']['filters']) == len(fake_filters)
     service.gateway_rpc.unicast.assert_called_once()
     service.dispatch.assert_called_once()
+
+
+def test_when_querying_stories_with_non_allowed_filter_should_cause_error(db_session):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id1 = uuid.uuid4()
+    fake_poker_id2 = uuid.uuid4()
+    fake_story_id1 = uuid.uuid4()
+    fake_story_id2 = uuid.uuid4()
+    fake_story_id3 = uuid.uuid4()
+
+    fake_filters = [
+        {
+            "attr": 'fake_field',
+            "value": ''
+        }
+    ]
+
+    db_session.add(Poker(id=fake_poker_id1, creator='user@test.com'))
+    db_session.add(Poker(id=fake_poker_id2, creator='user@test.com'))
+    db_session.commit()
+    db_session.add(Story(id=fake_story_id1, name="Story 1", poker_id=fake_poker_id1))
+    db_session.add(Story(id=fake_story_id2, name="Story 2", poker_id=fake_poker_id1))
+    db_session.add(Story(id=fake_story_id3, name="Story from other poker", poker_id=fake_poker_id2))
+    db_session.commit()
+
+    service = worker_factory(StoryService, db=db_session)
+    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    # assert
+    with pytest.raises(InvalidFilter):
+        result = service.query(fake_sid, fake_filters)

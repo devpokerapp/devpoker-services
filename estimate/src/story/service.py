@@ -4,7 +4,7 @@ from nameko.rpc import rpc
 
 from base.schemas import APIModel
 from base.service import BaseService
-from base.converters import from_uuid
+from base.converters import from_uuid, from_str
 from story.schemas import StoryRead, StoryCreate, StoryUpdate
 from story.models import Story
 
@@ -21,6 +21,7 @@ class StoryService(BaseService):
 
     def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
         return {
+            'name': from_str,
             'poker_id': from_uuid
         }
 

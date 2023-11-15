@@ -8,7 +8,7 @@ from nameko.rpc import rpc, RpcProxy
 from nameko_sqlalchemy import DatabaseSession
 from sqlalchemy.orm import Session
 
-from base.exceptions import NotFound
+from base.exceptions import NotFound, InvalidFilter
 from base.models import DeclarativeBase, Model
 from base.schemas import APIModel, Filter, QueryMetadata, QueryRead
 
@@ -107,7 +107,7 @@ class BaseService:
         for f in filters:
             filter = Filter(**f)
             if filter.attr not in column_converters.keys():
-                continue
+                raise InvalidFilter(filter.attr)
             converter = column_converters.get(filter.attr)
             converted_value = converter(filter.value)
             applied_filters.append(getattr(self.model, filter.attr) == converted_value)
