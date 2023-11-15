@@ -58,7 +58,7 @@ class PokerService(BaseService):
         return result
 
     @rpc
-    def select_story(self, sid: str, poker_id: str, story_id: Union[str | None]):
+    def select_story(self, sid: str, poker_id: str, story_id: Union[str | None] = None):
         poker = self.retrieve(sid=None, entity_id=poker_id)
 
         story = None
