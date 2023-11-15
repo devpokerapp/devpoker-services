@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from nameko.rpc import rpc, RpcProxy
 
@@ -33,6 +34,8 @@ class PokerService(BaseService):
 
         return participant
 
+    # TODO: leave event
+
     @rpc
     def context(self, sid: str, entity_id: str):
         filters = [{
@@ -55,9 +58,12 @@ class PokerService(BaseService):
         return result
 
     @rpc
-    def select_story(self, sid: str, poker_id: str, story_id: str):
-        story = self.story_rpc.retrieve(sid=None, entity_id=story_id)
+    def select_story(self, sid: str, poker_id: str, story_id: Union[str | None]):
         poker = self.retrieve(sid=None, entity_id=poker_id)
+
+        story = None
+        if story_id is not None:
+            story = self.story_rpc.retrieve(sid=None, entity_id=story_id)
 
         updated = self.update(sid=None, entity_id=poker_id, payload={
             "creator": poker['creator'],
