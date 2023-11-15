@@ -4,7 +4,16 @@
 
 ## About
 
-Poker events are time specific entities related to something that happened on a poker session. This includes:
+Poker events are time specific entities related to something that happened on
+a poker session. This includes:
 
 - Votes
 - Comments
+- Actions
+  - Revealing votes
+  - Setting story estimation
+  - Starting new vote
+  - Finishing session
+
+The flow of events should represent everything that happened during the
+session.  
