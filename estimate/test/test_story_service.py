@@ -385,7 +385,7 @@ def test_when_querying_stories_from_poker_id_without_stories_should_return_empty
     service.dispatch.assert_called_once()
 
 
-def test_when_querying_stories_with_empty_filter_should_return_empty_list(db_session):
+def test_when_querying_stories_with_invalid_value_should_cause_error(db_session):
     # arrange
     fake_sid = '1aaa'
     fake_poker_id1 = uuid.uuid4()
@@ -414,20 +414,9 @@ def test_when_querying_stories_with_empty_filter_should_return_empty_list(db_ses
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
-    result = service.query(fake_sid, fake_filters)
-
     # assert
-    assert type(result) is dict
-    assert 'items' in result
-    assert 'metadata' in result
-    assert type(result['items']) is list
-    assert type(result['metadata']) is dict
-    assert len(result['items']) == 0
-    assert 'filters' in result['metadata']
-    assert type(result['metadata']['filters']) is list
-    assert len(result['metadata']['filters']) == len(fake_filters)
-    service.gateway_rpc.unicast.assert_called_once()
-    service.dispatch.assert_called_once()
+    with pytest.raises(InvalidFilter):
+        result = service.query(fake_sid, fake_filters)
 
 
 def test_when_querying_stories_with_non_allowed_filter_should_cause_error(db_session):

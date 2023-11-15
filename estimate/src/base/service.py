@@ -109,7 +109,11 @@ class BaseService:
             if filter.attr not in column_converters.keys():
                 raise InvalidFilter(filter.attr)
             converter = column_converters.get(filter.attr)
-            converted_value = converter(filter.value)
+            try:
+                converted_value = converter(filter.value)
+            except Exception as exc:
+                logger.error(f'Unable to convert filter value. attr: {filter.attr}; value: {filter.value}')
+                raise InvalidFilter(filter.attr)
             applied_filters.append(getattr(self.model, filter.attr) == converted_value)
 
         entities = self.db.query(self.model) \
