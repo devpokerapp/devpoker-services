@@ -1,4 +1,5 @@
 import logging
+import typing
 from abc import abstractmethod
 from uuid import UUID
 
@@ -9,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from base.exceptions import NotFound
 from base.models import DeclarativeBase, Model
-from base.schemas import APIModel
+from base.schemas import APIModel, Filter, QueryMetadata, QueryRead
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -49,6 +50,21 @@ class BaseService:
     def dto_update(self) -> APIModel:
         pass
 
+    @abstractmethod
+    def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
+        """
+        Defines how to convert strings received from query filters. The column
+        is defined by the dict key. The value is a converter function. Columns
+        not present on the dict will be considered as disabled for querying.
+
+        A set of sample converters can be found in `base.converters`
+        """
+        return dict()
+
+    @property
+    def event_queried(self):
+        return f"{self.entity_name}_queried"
+
     @property
     def event_retrieved(self):
         return f"{self.entity_name}_retrieved"
@@ -77,6 +93,42 @@ class BaseService:
             self.gateway_rpc.broadcast(room_name, event, payload)
         else:
             self.gateway_rpc.unicast(sid, event, payload)
+
+    @rpc
+    def query(self, sid, filters: list[dict]) -> dict:
+        """
+        Queries the stored entities based on a list of filters
+
+        Only does unicast
+        """
+        applied_filters = list()
+        column_converters = self.get_query_column_converters()
+
+        for f in filters:
+            filter = Filter(**f)
+            if filter.attr not in column_converters.keys():
+                continue
+            converter = column_converters.get(filter.attr)
+            converted_value = converter(filter.value)
+            applied_filters.append(getattr(self.model, filter.attr) == converted_value)
+
+        entities = self.db.query(self.model) \
+            .filter(*applied_filters) \
+            .all()
+
+        items = []
+        metadata = QueryMetadata(filters=filters)
+
+        for entity in entities:
+            items.append(self.dto_read.to_json(entity))
+
+        result = QueryRead(items=items, metadata=metadata)
+        result = result.to_json()
+
+        self.dispatch(self.event_queried, result)
+        self.gateway_rpc.unicast(sid, self.event_queried, result)
+
+        return result
 
     @rpc
     def retrieve(self, sid, entity_id: str) -> dict:
