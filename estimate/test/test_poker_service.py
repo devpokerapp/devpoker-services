@@ -141,5 +141,78 @@ def test_when_joining_non_existing_user_in_poker_should_cause_error(db_session):
     with pytest.raises(NotFound):
         result = service.join(fake_sid, participant_id=str(fake_participant_id), poker_id=str(fake_poker_id))
 
-# TODO: test context
+
+def test_when_getting_poker_context_should_return_as_dict(db_session, monkeypatch):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id = uuid.uuid4()
+    fake_poker = {
+        'id': str(fake_poker_id)
+    }
+    fake_query_response = {
+        "items": [],
+        "metadata": {
+            "filters": []
+        }
+    }
+
+    db_session.add(Poker(id=fake_poker_id, creator='user@test.com'))
+    db_session.commit()
+
+    service = worker_factory(PokerService, db=db_session)
+    service.story_rpc.query.side_effect = lambda *args, **kwargs: fake_query_response
+    service.participant_rpc.query.side_effect = lambda *args, **kwargs: fake_query_response
+    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    monkeypatch.setattr(service, 'retrieve', lambda *args, **kwargs: fake_poker)
+
+    # act
+    result = service.context(sid=fake_sid, entity_id=str(fake_poker_id))
+
+    # assert
+    assert type(result) is dict
+    assert 'poker' in result
+    assert 'stories' in result
+    assert 'participants' in result
+    assert type(result['poker']) is dict
+    assert type(result['stories']) is list
+    assert type(result['participants']) is list
+    service.gateway_rpc.unicast.assert_called_once()
+
+
+def test_when_getting_poker_context_from_non_existing_should_cause_error(db_session, monkeypatch):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id = uuid.uuid4()
+    fake_poker = {
+        'id': str(fake_poker_id)
+    }
+    fake_query_response = {
+        "items": [],
+        "metadata": {
+            "filters": []
+        }
+    }
+
+    db_session.add(Poker(id=fake_poker_id, creator='user@test.com'))
+    db_session.commit()
+
+    def fake_poker_retrieve(*args, **kwargs):
+        raise NotFound()
+
+    service = worker_factory(PokerService, db=db_session)
+    service.story_rpc.query.side_effect = lambda *args, **kwargs: fake_query_response
+    service.participant_rpc.query.side_effect = lambda *args, **kwargs: fake_query_response
+    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    monkeypatch.setattr(service, 'retrieve', fake_poker_retrieve)
+
+    # act
+    # assert
+    with pytest.raises(NotFound):
+        result = service.context(sid=fake_sid, entity_id=str(fake_poker_id))
+
+
 # TODO: test select_story
