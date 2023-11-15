@@ -53,3 +53,18 @@ class PokerService(BaseService):
         self.gateway_rpc.unicast(sid, 'poker_context', result)
 
         return result
+
+    @rpc
+    def select_story(self, sid: str, poker_id: str, story_id: str):
+        story = self.story_rpc.retrieve(sid=None, entity_id=story_id)
+        poker = self.retrieve(sid=None, entity_id=poker_id)
+
+        updated = self.update(sid=None, entity_id=poker_id, payload={
+            "creator": poker['creator'],
+            "current_story_id": story_id
+        })
+
+        self.gateway_rpc.broadcast(poker_id, 'poker_selected_story', story)
+        self.dispatch('poker_selected_story', story)
+
+        return story

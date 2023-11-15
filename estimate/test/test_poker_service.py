@@ -215,4 +215,70 @@ def test_when_getting_poker_context_from_non_existing_should_cause_error(db_sess
         result = service.context(sid=fake_sid, entity_id=str(fake_poker_id))
 
 
-# TODO: test select_story
+def test_when_selecting_story_should_return_story_dict(db_session, monkeypatch):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id = uuid.uuid4()
+    fake_story_id = uuid.uuid4()
+    fake_story = {
+        'id': str(fake_story_id),
+        'poker_id': str(fake_poker_id),
+    }
+
+    def fake_poker_retrieve(*args, **kwargs):
+        return {
+            'id': str(fake_poker_id),
+            'creator': 'user@test.com',
+            'current_story_id': None
+        }
+
+    def fake_poker_update(*args, **kwargs):
+        pass
+
+    service = worker_factory(PokerService, db=db_session)
+    service.story_rpc.retrieve.side_effect = lambda *args, **kwargs: fake_story
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    monkeypatch.setattr(service, 'retrieve', fake_poker_retrieve)
+    monkeypatch.setattr(service, 'update', fake_poker_update)
+
+    # act
+    result = service.select_story(sid=fake_sid, poker_id=str(fake_story_id), story_id=str(fake_story_id))
+
+    # assert
+    assert type(result) is dict
+    assert 'id' in result
+    assert type(result['id']) is str
+    assert result['id'] == str(fake_story_id)
+    service.gateway_rpc.broadcast.assert_called_once()
+    service.dispatch.assert_called_once()
+
+
+def test_when_selecting_non_existing_story_should_cause_error(db_session, monkeypatch):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id = uuid.uuid4()
+    fake_story_id = uuid.uuid4()
+
+    def fake_poker_retrieve(*args, **kwargs):
+        pass
+
+    def fake_poker_update(*args, **kwargs):
+        pass
+
+    def fake_story_retrieve(*args, **kwargs):
+        raise NotFound()
+
+    service = worker_factory(PokerService, db=db_session)
+    service.story_rpc.retrieve.side_effect = fake_story_retrieve
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    monkeypatch.setattr(service, 'retrieve', fake_poker_retrieve)
+    monkeypatch.setattr(service, 'update', fake_poker_update)
+
+    # act
+    # assert
+    with pytest.raises(NotFound):
+        result = service.select_story(sid=fake_sid, poker_id=str(fake_story_id), story_id=str(fake_story_id))
