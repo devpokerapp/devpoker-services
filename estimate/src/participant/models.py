@@ -2,22 +2,17 @@ from sqlalchemy import Column, String, Uuid, ForeignKey
 from base.models import Model
 
 
-class Story(Model):
-    __tablename__ = "stories"
+class Participant(Model):
+    __tablename__ = "participants"
 
     name = Column(
         String(),
         nullable=False
     )
 
-    description = Column(
+    sid = Column(
         String(),
-        nullable=True
-    )
-
-    value = Column(
-        String(),
-        nullable=True
+        nullable=False
     )
 
     poker_id = Column(
@@ -25,3 +20,5 @@ class Story(Model):
         ForeignKey("pokers.id", name="fk_stories_poker_id"),
         nullable=False
     )
+
+    # TODO: participant connection status

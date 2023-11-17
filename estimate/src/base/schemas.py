@@ -15,3 +15,24 @@ class APIModel(BaseModel):
         result = result.model_dump_json(by_alias=True)
         result = json.loads(result)  # converts to json and back to stringify Date and UUID
         return result
+
+
+class SimpleModel(BaseModel):
+    def to_json(self) -> dict:
+        result = self.model_dump_json(by_alias=True)
+        result = json.loads(result)
+        return result
+
+
+class Filter(SimpleModel):
+    attr: str
+    value: str
+
+
+class QueryMetadata(SimpleModel):
+    filters: list
+
+
+class QueryRead(SimpleModel):
+    items: list
+    metadata: QueryMetadata
