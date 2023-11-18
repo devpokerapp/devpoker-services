@@ -67,11 +67,13 @@ class GatewayService:
         logger.debug(f'broadcasted event {event} to channel {channel}')
         self.hub.broadcast(channel, event, data)
 
+    @ws
     @rpc
     def subscribe(self, sid, channel):
         logger.debug(f'subscribed {sid} to channel {channel}')
         self.hub.subscribe(sid, channel)
 
+    @ws
     @rpc
     def unsubscribe(self, sid, channel):
         logger.debug(f'unsubscribed {sid} from channel {channel}')
