@@ -19,8 +19,10 @@ class EventRead(APIModel):
 class EventCreate(APIModel):
     type: Literal["vote", "comment", "action"]
     content: str
+    revealed: bool
     story_id: UUID
 
 
 class EventUpdate(APIModel):
     content: str
+    revealed: bool

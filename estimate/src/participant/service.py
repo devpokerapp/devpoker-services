@@ -4,7 +4,7 @@ import typing
 from nameko.rpc import rpc
 
 from base.service import BaseService
-from base.converters import from_uuid
+from base.converters import from_uuid, from_str
 from participant.models import Participant
 from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate
 
@@ -24,6 +24,7 @@ class ParticipantService(BaseService):
 
     def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
         return {
+            'sid': from_str,
             'poker_id': from_uuid
         }
 
