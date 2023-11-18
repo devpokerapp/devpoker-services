@@ -52,3 +52,8 @@ class VoteService(BaseService):
         self.dispatch("vote_placed", result)
 
         return result
+
+    @rpc
+    def delete(self, sid, entity_id: str) -> dict:
+        # TODO: permissions
+        return self.event_rpc.delete(sid, entity_id)
