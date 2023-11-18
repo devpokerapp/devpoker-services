@@ -47,7 +47,7 @@ class EventService(EntityService):
         if len(participants) < 1:
             raise NotFound()
 
-        participant: Participant = participants[0]
+        participant = participants['items'][0]
         return str(participant['id'])
 
     @rpc
