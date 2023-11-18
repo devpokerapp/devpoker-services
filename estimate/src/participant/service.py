@@ -3,8 +3,9 @@ import typing
 
 from nameko.rpc import rpc
 
-from base.service import EntityService
 from base.converters import from_uuid, from_str
+from base.exceptions import NotFound
+from base.service import EntityService
 from participant.models import Participant
 from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate
 
@@ -47,3 +48,16 @@ class ParticipantService(EntityService):
         self.handle_propagate(sid, self.event_created, entity, result)
 
         return result
+
+    @rpc
+    def current(self, sid) -> dict:
+        participants = self.query(sid=None, filters=[{
+            "attr": "sid",
+            "value": sid
+        }])
+
+        if len(participants) < 1:
+            raise NotFound()
+
+        participant = participants['items'][0]
+        return participant
