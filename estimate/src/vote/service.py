@@ -30,11 +30,11 @@ class VoteService(BaseService):
             "value": "false"
         }])
 
-        already_placed = len(existing) > 0
+        already_placed = len(existing['items']) > 0
         result: dict
 
         if already_placed:  # update
-            old = existing[0]
+            old = existing['items'][0]
             result = self.event_rpc.update(sid=sid, entity_id=old['id'], payload={
                 "content": dto.content,
                 "revealed": False,

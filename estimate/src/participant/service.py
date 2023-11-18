@@ -56,7 +56,7 @@ class ParticipantService(EntityService):
             "value": sid
         }])
 
-        if len(participants) < 1:
+        if len(participants['items']) < 1:
             raise NotFound()
 
         participant = participants['items'][0]

@@ -26,7 +26,9 @@ def test_when_placing_vote_should_return_vote_event_as_dict():
     }
 
     def fake_event_query(*args, **kwargs):
-        return []
+        return {
+            "items": []
+        }
 
     def fake_event_create(*args, **kwargs):
         return {
@@ -94,16 +96,18 @@ def test_when_placing_vote_before_its_revealed_should_replace_current_vote(monke
     }
 
     def fake_event_query(*args, **kwargs):
-        return [
-            {
-                "id": str(fake_event_id),
-                "type": "vote",
-                "content": "2",
-                "revealed": True,
-                "creator": str(fake_participant_id),
-                "storyId": str(fake_story_id1)
-            }
-        ]
+        return {
+            "items": [
+                {
+                    "id": str(fake_event_id),
+                    "type": "vote",
+                    "content": "2",
+                    "revealed": True,
+                    "creator": str(fake_participant_id),
+                    "storyId": str(fake_story_id1)
+                }
+            ]
+        }
 
     def fake_event_create(*args, **kwargs):
         return {}
