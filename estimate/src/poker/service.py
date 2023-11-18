@@ -26,6 +26,7 @@ class PokerService(EntityService):
     @rpc
     def join(self, sid: str, participant_id: str, poker_id: str):
         participant = self.participant_rpc.retrieve(sid=None, entity_id=participant_id)
+        self.participant_rpc.update(sid=sid, entity_id=participant_id, payload={})
 
         self.gateway_rpc.subscribe(sid, poker_id)
 

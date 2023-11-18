@@ -1,5 +1,6 @@
 import logging
 import typing
+from uuid import UUID
 
 from nameko.rpc import rpc
 
@@ -46,6 +47,30 @@ class ParticipantService(EntityService):
         result = self.dto_read.to_json(entity)
 
         self.handle_propagate(sid, self.event_created, entity, result)
+
+        return result
+
+    @rpc
+    def update(self, sid, entity_id: str, payload: dict) -> dict:
+        entity_id = UUID(entity_id)
+
+        entity = self.db.query(self.model) \
+            .filter(self.model.id == entity_id) \
+            .first()
+
+        if entity is None:
+            raise NotFound()
+
+        # this method overrides default update to only update sid
+        entity.sid = sid
+
+        self.db.commit()
+
+        logger.debug(f'update "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
+
+        result = self.dto_read.to_json(entity)
+
+        self.handle_propagate(sid, self.event_updated, entity, result)
 
         return result
 
