@@ -184,12 +184,16 @@ def test_when_creating_event_with_valid_participant_should_return_dict(db_sessio
     db_session.commit()
 
     def fake_query_participants(*args, **kwargs):
-        return [{
-            "id": str(fake_participant_id),
-            "pokerId": str(fake_poker_id1),
-            "name": "Arthur",
-            "sid": fake_sid
-        }]
+        return {
+            "items": [
+                {
+                    "id": str(fake_participant_id),
+                    "pokerId": str(fake_poker_id1),
+                    "name": "Arthur",
+                    "sid": fake_sid
+                }
+            ]
+        }
 
     service = worker_factory(EventService, db=db_session)
     service.participant_rpc.query.side_effect = fake_query_participants

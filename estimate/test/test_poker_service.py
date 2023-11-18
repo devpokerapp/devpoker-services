@@ -98,6 +98,7 @@ def test_when_joining_poker_should_subscribe_to_room(db_session):
 
     service = worker_factory(PokerService, db=db_session)
     service.participant_rpc.retrieve.side_effect = lambda *args, **kwargs: fake_participant
+    service.participant_rpc.update.side_effect = lambda *args, **kwargs: None
     service.gateway_rpc.subscribe.side_effect = lambda *args, **kwargs: None
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
@@ -111,6 +112,7 @@ def test_when_joining_poker_should_subscribe_to_room(db_session):
     assert type(result['id']) is str
     assert result['id'] == str(fake_participant_id)  # defined in fake_participant
     service.participant_rpc.retrieve.assert_called_once()
+    service.participant_rpc.update.assert_called_once()
     service.gateway_rpc.subscribe.assert_called_once()
     service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
