@@ -27,3 +27,6 @@ class StoryService(BaseService):
     def get_room_name(self, entity):
         story: Story = entity
         return str(story.poker_id)
+
+
+    # TODO: story.context
