@@ -206,11 +206,13 @@ def test_when_creating_event_with_valid_participant_should_return_dict(db_sessio
     assert 'content' in result
     assert 'storyId' in result
     assert 'revealed' in result
+    assert 'creator' in result
     assert result['id'] is not None
     assert result['type'] == "vote"
     assert result['content'] == "5"
     assert result['revealed'] is False
     assert result['storyId'] == str(fake_story_id1)
+    assert result['creator'] == str(fake_participant_id)
     service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
 
@@ -247,3 +249,52 @@ def test_when_creating_event_with_non_existing_participant_should_cause_error(db
     # assert
     with pytest.raises(NotFound):
         result = service.create(fake_sid, fake_payload)
+
+
+def test_when_creating_system_event_should_return_dict_with_system_creator(db_session):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id1 = uuid.uuid4()
+    fake_story_id1 = uuid.uuid4()
+    fake_participant_id = uuid.uuid4()
+
+    fake_payload = {
+        "type": "vote",
+        "content": "5",
+        "revealed": "false",
+        "story_id": str(fake_story_id1)
+    }
+
+    db_session.add(Poker(id=fake_poker_id1, creator='user@test.com'))
+    db_session.commit()
+    db_session.add(Story(id=fake_story_id1, poker_id=fake_poker_id1, name="Story 1"))
+    db_session.add(Participant(id=fake_participant_id, poker_id=fake_poker_id1, name="Arthur", sid=fake_sid))
+    db_session.commit()
+
+    def fake_query_participants(*args, **kwargs):
+        return []
+
+    service = worker_factory(EventService, db=db_session)
+    service.participant_rpc.query.side_effect = fake_query_participants
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    result = service.create(fake_sid, fake_payload, _system_event=True)
+
+    # assert
+    assert type(result) is dict
+    assert 'id' in result
+    assert 'type' in result
+    assert 'content' in result
+    assert 'storyId' in result
+    assert 'revealed' in result
+    assert 'creator' in result
+    assert result['id'] is not None
+    assert result['type'] == "vote"
+    assert result['content'] == "5"
+    assert result['revealed'] is False
+    assert result['storyId'] == str(fake_story_id1)
+    assert result['creator'] == "system"
+    service.gateway_rpc.broadcast.assert_called_once()
+    service.dispatch.assert_called_once()
