@@ -3,7 +3,7 @@ import typing
 
 from nameko.rpc import rpc
 
-from base.service import BaseService
+from base.service import EntityService
 from base.converters import from_uuid, from_str
 from participant.models import Participant
 from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-class ParticipantService(BaseService):
+class ParticipantService(EntityService):
     name = "participant_service"
 
     entity_name = 'participant'

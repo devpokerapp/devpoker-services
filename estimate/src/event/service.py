@@ -5,7 +5,7 @@ from nameko.rpc import rpc, RpcProxy
 
 from base.exceptions import NotFound
 from base.converters import from_uuid, from_str, from_bool
-from base.service import BaseService
+from base.service import EntityService
 from event.models import Event
 from event.schemas import EventRead, EventCreate, EventUpdate
 from participant.models import Participant
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-class EventService(BaseService):
+class EventService(EntityService):
     name = "event_service"
 
     entity_name = 'event'
