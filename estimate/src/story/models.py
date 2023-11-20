@@ -28,4 +28,5 @@ class Story(Model):
         nullable=False
     )
 
+    poker = relationship("Poker", back_populates="stories")
     events = relationship("Event", back_populates="story")
