@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Boolean, Uuid, ForeignKey
+from sqlalchemy.orm import relationship
 
 from base.models import Model
 
@@ -31,3 +32,7 @@ class Event(Model):
         ForeignKey("stories.id", name="fk_events_story_id"),
         nullable=False
     )
+
+    story = relationship("Story", back_populates="events")
+
+    # TODO: maybe include a "group_key" to group events to a specific voting moment
