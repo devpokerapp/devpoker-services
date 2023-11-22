@@ -2,6 +2,12 @@ import pytest
 from sqlalchemy import create_engine
 from base.models import DeclarativeBase
 
+# MODELS:
+from poker.models import Poker
+from story.models import Story
+from event.models import Event
+from participant.models import Participant
+
 
 @pytest.fixture(scope='session')
 def db_url():
