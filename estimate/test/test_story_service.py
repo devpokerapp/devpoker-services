@@ -33,6 +33,8 @@ def test_when_creating_story_should_return_as_dict(db_session):
     assert 'pokerId' in result
     assert type(result['pokerId']) is str
     assert result['pokerId'] == str(fake_poker_id)
+    assert 'events' in result
+    assert type(result['events']) is list
     service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
 
@@ -144,6 +146,8 @@ def test_when_updating_story_should_return_as_dict(db_session):
     assert 'pokerId' in result
     assert type(result['pokerId']) is str
     assert result['pokerId'] == str(fake_poker_id)
+    assert 'events' in result
+    assert type(result['events']) is list
     service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
 
@@ -218,6 +222,8 @@ def test_when_deleting_story_should_return_as_dict(db_session):
     assert 'pokerId' in result
     assert type(result['pokerId']) is str
     assert result['pokerId'] == str(fake_poker_id)
+    assert 'events' in result
+    assert type(result['events']) is list
     service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
 
@@ -335,6 +341,8 @@ def test_when_querying_stories_with_same_poker_id_should_return_only_stories_rel
     assert result['items'][0]['id'] == str(fake_story_id1)
     assert 'id' in result['items'][1]
     assert result['items'][1]['id'] == str(fake_story_id2)
+    assert 'events' in result['items'][1]
+    assert type(result['items'][1]['events']) is list
     assert 'filters' in result['metadata']
     assert type(result['metadata']['filters']) is list
     assert len(result['metadata']['filters']) == len(fake_filters)

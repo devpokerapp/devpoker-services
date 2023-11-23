@@ -18,11 +18,12 @@ logger.setLevel(logging.DEBUG)
 
 class BaseService:
     # NOTE: services must have the 'name' property
-
-    db: Session = DatabaseSession(DeclarativeBase)
     gateway_rpc = RpcProxy('gateway_service')
     dispatch = EventDispatcher()
 
+
+class EntityService(BaseService):
+    db: Session = DatabaseSession(DeclarativeBase)
     broadcast_changes: bool = False
 
     @property

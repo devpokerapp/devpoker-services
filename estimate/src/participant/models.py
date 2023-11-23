@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Uuid, ForeignKey
+from sqlalchemy.orm import relationship
 from base.models import Model
 
 
@@ -22,3 +23,5 @@ class Participant(Model):
     )
 
     # TODO: participant connection status
+
+    poker = relationship("Poker", back_populates="participants")

@@ -26,6 +26,10 @@ def test_when_creating_poker_should_return_as_dict(db_session):
     assert type(result) is dict
     assert 'id' in result
     assert type(result['id']) is str
+    assert 'stories' in result
+    assert type(result['stories']) is list
+    assert 'participants' in result
+    assert type(result['participants']) is list
     service.gateway_rpc.unicast.assert_called_once()
     service.dispatch.assert_called_once()
 
@@ -64,6 +68,10 @@ def test_when_retrieving_poker_should_return_as_dict(db_session):
     assert type(result) is dict
     assert 'id' in result
     assert type(result['id']) is str
+    assert 'stories' in result
+    assert type(result['stories']) is list
+    assert 'participants' in result
+    assert type(result['participants']) is list
     service.gateway_rpc.unicast.assert_called_once()
 
 
@@ -98,6 +106,7 @@ def test_when_joining_poker_should_subscribe_to_room(db_session):
 
     service = worker_factory(PokerService, db=db_session)
     service.participant_rpc.retrieve.side_effect = lambda *args, **kwargs: fake_participant
+    service.participant_rpc.update.side_effect = lambda *args, **kwargs: None
     service.gateway_rpc.subscribe.side_effect = lambda *args, **kwargs: None
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
@@ -111,6 +120,7 @@ def test_when_joining_poker_should_subscribe_to_room(db_session):
     assert type(result['id']) is str
     assert result['id'] == str(fake_participant_id)  # defined in fake_participant
     service.participant_rpc.retrieve.assert_called_once()
+    service.participant_rpc.update.assert_called_once()
     service.gateway_rpc.subscribe.assert_called_once()
     service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()

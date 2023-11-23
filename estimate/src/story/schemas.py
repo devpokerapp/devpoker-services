@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from base.schemas import APIModel
+from event.schemas import EventRead
 
 
 class StoryRead(APIModel):
@@ -13,6 +14,7 @@ class StoryRead(APIModel):
     poker_id: UUID
     description: Optional[str] = None
     value: Optional[str] = None
+    events: List[EventRead] = None
 
 
 class StoryCreate(APIModel):

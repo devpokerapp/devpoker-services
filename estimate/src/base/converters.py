@@ -7,3 +7,7 @@ def from_uuid(value: str):
 
 def from_str(value: str):
     return value
+
+
+def from_bool(value: str):
+    return value.lower() == "true"

@@ -17,3 +17,7 @@ class Poker(Model):
         # ForeignKey("stories.id", name="fk_pokers_current_story_id"),
         nullable=True
     )
+
+    # TODO: current_story
+    stories = relationship("Story", back_populates="poker")
+    participants = relationship("Participant", back_populates="poker")

@@ -15,13 +15,17 @@ class GatewayService:
     poker_rpc = RpcProxy("poker_service")
     story_rpc = RpcProxy("story_service")
     participant_rpc = RpcProxy("participant_service")
+    event_rpc = RpcProxy("event_service")
+    vote_rpc = RpcProxy("vote_service")
 
     @ws
     def request(self, sid, service, method, data, transaction_id=None):
         services = {
             'poker_service': self.poker_rpc,
             'story_service': self.story_rpc,
-            'participant_service': self.participant_rpc
+            'participant_service': self.participant_rpc,
+            'event_service': self.event_rpc,
+            'vote_service': self.vote_rpc,
         }
 
         logger.debug(f'called {service}:{method} by {sid}')
@@ -63,11 +67,13 @@ class GatewayService:
         logger.debug(f'broadcasted event {event} to channel {channel}')
         self.hub.broadcast(channel, event, data)
 
+    @ws
     @rpc
     def subscribe(self, sid, channel):
         logger.debug(f'subscribed {sid} to channel {channel}')
         self.hub.subscribe(sid, channel)
 
+    @ws
     @rpc
     def unsubscribe(self, sid, channel):
         logger.debug(f'unsubscribed {sid} from channel {channel}')

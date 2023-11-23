@@ -1,7 +1,10 @@
 from datetime import datetime
 from uuid import UUID
+from typing import List
 from pydantic import BaseModel
 from base.schemas import APIModel, SimpleModel
+from story.schemas import StoryRead
+from participant.schemas import ParticipantRead
 
 
 class PokerCreate(APIModel):
@@ -18,6 +21,8 @@ class PokerRead(APIModel):
     updated_at: datetime
     creator: str
     current_story_id: UUID | None
+    stories: List[StoryRead] = None
+    participants: List[ParticipantRead] = None
 
 
 class PokerContext(SimpleModel):

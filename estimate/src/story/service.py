@@ -3,13 +3,13 @@ import typing
 from nameko.rpc import rpc
 
 from base.schemas import APIModel
-from base.service import BaseService
+from base.service import EntityService
 from base.converters import from_uuid, from_str
 from story.schemas import StoryRead, StoryCreate, StoryUpdate
 from story.models import Story
 
 
-class StoryService(BaseService):
+class StoryService(EntityService):
     name = "story_service"
 
     entity_name = 'story'
@@ -27,3 +27,6 @@ class StoryService(BaseService):
     def get_room_name(self, entity):
         story: Story = entity
         return str(story.poker_id)
+
+
+    # TODO: story.context

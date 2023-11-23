@@ -3,7 +3,7 @@ from typing import Union
 
 from nameko.rpc import rpc, RpcProxy
 
-from base.service import BaseService, QueryRead
+from base.service import EntityService, QueryRead
 from poker.models import Poker
 from poker.schemas import PokerRead, PokerCreate, PokerUpdate, PokerContext
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-class PokerService(BaseService):
+class PokerService(EntityService):
     name = "poker_service"
 
     entity_name = "poker"
@@ -26,6 +26,7 @@ class PokerService(BaseService):
     @rpc
     def join(self, sid: str, participant_id: str, poker_id: str):
         participant = self.participant_rpc.retrieve(sid=None, entity_id=participant_id)
+        self.participant_rpc.update(sid=sid, entity_id=participant_id, payload={})
 
         self.gateway_rpc.subscribe(sid, poker_id)
 

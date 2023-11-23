@@ -1,10 +1,12 @@
 import logging
 import typing
+from uuid import UUID
 
 from nameko.rpc import rpc
 
-from base.service import BaseService
-from base.converters import from_uuid
+from base.converters import from_uuid, from_str
+from base.exceptions import NotFound
+from base.service import EntityService
 from participant.models import Participant
 from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate
 
@@ -12,7 +14,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-class ParticipantService(BaseService):
+class ParticipantService(EntityService):
     name = "participant_service"
 
     entity_name = 'participant'
@@ -24,6 +26,7 @@ class ParticipantService(BaseService):
 
     def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
         return {
+            'sid': from_str,
             'poker_id': from_uuid
         }
 
@@ -46,3 +49,40 @@ class ParticipantService(BaseService):
         self.handle_propagate(sid, self.event_created, entity, result)
 
         return result
+
+    @rpc
+    def update(self, sid, entity_id: str, payload: dict) -> dict:
+        entity_id = UUID(entity_id)
+
+        entity = self.db.query(self.model) \
+            .filter(self.model.id == entity_id) \
+            .first()
+
+        if entity is None:
+            raise NotFound()
+
+        # this method overrides default update to only update sid
+        entity.sid = sid
+
+        self.db.commit()
+
+        logger.debug(f'update "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
+
+        result = self.dto_read.to_json(entity)
+
+        self.handle_propagate(sid, self.event_updated, entity, result)
+
+        return result
+
+    @rpc
+    def current(self, sid) -> dict:
+        participants = self.query(sid=None, filters=[{
+            "attr": "sid",
+            "value": sid
+        }])
+
+        if len(participants['items']) < 1:
+            raise NotFound()
+
+        participant = participants['items'][0]
+        return participant

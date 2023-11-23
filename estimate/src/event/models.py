@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Boolean, Uuid, ForeignKey
 from sqlalchemy.orm import relationship
+
 from base.models import Model
-from story.models import Story
 
 
 class Event(Model):
@@ -33,4 +33,6 @@ class Event(Model):
         nullable=False
     )
 
-    story = relationship(Story, backref="events")
+    story = relationship("Story", back_populates="events")
+
+    # TODO: maybe include a "group_key" to group events to a specific voting moment
