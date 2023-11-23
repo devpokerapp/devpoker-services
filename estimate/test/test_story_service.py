@@ -8,6 +8,8 @@ from base.exceptions import NotFound, InvalidFilter
 from poker.models import Poker
 from story.models import Story
 from story.service import StoryService
+from participant.models import Participant
+from event.models import Event
 
 
 def test_when_creating_story_should_return_as_dict(db_session):
@@ -459,3 +461,136 @@ def test_when_querying_stories_with_non_allowed_filter_should_cause_error(db_ses
     # assert
     with pytest.raises(InvalidFilter):
         result = service.query(fake_sid, fake_filters)
+
+
+def test_when_revealing_votes_for_story_should_return_story_as_dict(db_session):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id1 = uuid.uuid4()
+    fake_story_id1 = uuid.uuid4()
+    fake_event_id1 = uuid.uuid4()
+    fake_event_id2 = uuid.uuid4()
+    fake_participant_id1 = uuid.uuid4()
+    fake_participant_id2 = uuid.uuid4()
+
+    db_session.add(Poker(id=fake_poker_id1, creator='user@test.com'))
+    db_session.commit()
+    db_session.add(Story(id=fake_story_id1, name="Story 1", poker_id=fake_poker_id1))
+    db_session.add(Participant(id=fake_participant_id1, poker_id=fake_poker_id1, name="Arthur", sid=fake_sid))
+    db_session.add(Participant(id=fake_participant_id2, poker_id=fake_poker_id1, name="Bruno", sid=fake_sid))
+    db_session.commit()
+    db_session.add(Event(id=fake_event_id1, type="vote", content="5", revealed=False, creator=str(fake_participant_id1),
+                         story_id=fake_story_id1))
+    db_session.add(Event(id=fake_event_id2, type="vote", content="2", revealed=False, creator=str(fake_participant_id2),
+                         story_id=fake_story_id1))
+    db_session.commit()
+
+    def fake_event_query(*args, **kwargs):
+        return {
+            "items": [
+                {
+                    "id": str(fake_event_id1),
+                    "type": "vote",
+                    "content": "5",
+                    "revealed": False,
+                    "creator": str(fake_participant_id1),
+                    "storyId": str(fake_story_id1)
+                },
+                {
+                    "id": str(fake_event_id2),
+                    "type": "vote",
+                    "content": "2",
+                    "revealed": False,
+                    "creator": str(fake_participant_id1),
+                    "storyId": str(fake_story_id1)
+                }
+            ]
+        }
+
+    def fake_event_update(*args, **kwargs):
+        return {
+            "id": str(fake_event_id1),
+            "type": "vote",
+            "content": "5",
+            "revealed": True,
+            "creator": str(fake_participant_id1),
+            "storyId": str(fake_story_id1)
+        }
+
+    service = worker_factory(StoryService, db=db_session)
+    service.event_rpc.query.side_effect = fake_event_query
+    service.event_rpc.update.side_effect = fake_event_update
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    result = service.reveal(fake_sid, str(fake_story_id1))
+
+    # assert
+    assert type(result) is dict
+    assert 'id' in result
+    assert type(result['id']) is str
+    assert 'pokerId' in result
+    assert type(result['pokerId']) is str
+    assert result['pokerId'] == str(fake_poker_id1)
+    assert 'events' in result
+    assert type(result['events']) is list
+    assert len(result['events']) == 2
+    service.gateway_rpc.broadcast.assert_called_once()
+    service.dispatch.assert_called_once()
+    service.event_rpc.query.assert_called_once()
+    service.event_rpc.update.assert_called()
+
+
+def test_when_revealing_votes_for_non_existing_story_should_cause_an_error(db_session):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id1 = uuid.uuid4()
+    fake_story_id1 = uuid.uuid4()
+    fake_event_id1 = uuid.uuid4()
+    fake_event_id2 = uuid.uuid4()
+    fake_participant_id1 = uuid.uuid4()
+    fake_participant_id2 = uuid.uuid4()
+
+    def fake_event_query(*args, **kwargs):
+        return {
+            "items": [
+                {
+                    "id": str(fake_event_id1),
+                    "type": "vote",
+                    "content": "5",
+                    "revealed": False,
+                    "creator": str(fake_participant_id1),
+                    "storyId": str(fake_story_id1)
+                },
+                {
+                    "id": str(fake_event_id2),
+                    "type": "vote",
+                    "content": "2",
+                    "revealed": False,
+                    "creator": str(fake_participant_id1),
+                    "storyId": str(fake_story_id1)
+                }
+            ]
+        }
+
+    def fake_event_update(*args, **kwargs):
+        return {
+            "id": str(fake_event_id1),
+            "type": "vote",
+            "content": "5",
+            "revealed": True,
+            "creator": str(fake_participant_id1),
+            "storyId": str(fake_story_id1)
+        }
+
+    service = worker_factory(StoryService, db=db_session)
+    service.event_rpc.query.side_effect = fake_event_query
+    service.event_rpc.update.side_effect = fake_event_update
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    # assert
+    with pytest.raises(NotFound):
+        result = service.reveal(fake_sid, str(fake_story_id1))
