@@ -48,8 +48,6 @@ class StoryService(EntityService):
                 "revealed": True
             })
 
-        # TODO: register reveal action
-
         entity_id = UUID(entity_id)
 
         entity = self.db.query(self.model) \
