@@ -18,6 +18,7 @@ class GatewayService:
     event_rpc = RpcProxy("event_service")
     vote_rpc = RpcProxy("vote_service")
     action_rpc = RpcProxy("action_service")
+    polling_rpc = RpcProxy("polling_service")
 
     @ws
     def request(self, sid, service, method, data, transaction_id=None):
@@ -28,6 +29,7 @@ class GatewayService:
             'event_service': self.event_rpc,
             'vote_service': self.vote_rpc,
             'action_service': self.action_rpc,
+            'polling_service': self.polling_rpc,
         }
 
         logger.debug(f'called {service}:{method} by {sid}')
