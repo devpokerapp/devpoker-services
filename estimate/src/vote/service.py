@@ -1,20 +1,41 @@
+import typing
+
 from nameko.rpc import rpc, RpcProxy
 
-from base.service import BaseService
-from vote.schemas import VotePlace
+from base.converters import from_uuid
+from base.service import EntityService
+from vote.schemas import VotePlace, VoteRead, VoteCreate, VoteUpdate
+from vote.models import Vote
+from polling.models import Polling
 
 
-class VoteService(BaseService):
+class VoteService(EntityService):
     name = "vote_service"
+
+    entity_name = "vote"
+    model = Vote
+    dto_read = VoteRead
+    dto_create = VoteCreate
+    dto_update = VoteUpdate
+    broadcast_changes = True
 
     event_rpc = RpcProxy("event_service")
     participant_rpc = RpcProxy("participant_service")
 
-    def get_room_name(self, event: dict):
-        return f'story:{event["storyId"]}'
+    def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
+        return {
+            'participant_id': from_uuid,
+            'polling_id': from_uuid
+        }
+
+    def get_room_name(self, entity) -> str:
+        vote: Vote = entity
+        polling: Polling = vote.polling
+        return f'story:{polling.story_id}'
 
     @rpc
     def place(self, sid, payload: dict):
+        # TODO: use Vote entity instead of events
         dto = VotePlace(**payload)
         participant = self.participant_rpc.current(sid=sid)
         current_creator = participant['id']
@@ -52,8 +73,3 @@ class VoteService(BaseService):
         self.dispatch("vote_placed", result)
 
         return result
-
-    @rpc
-    def delete(self, sid, entity_id: str) -> dict:
-        # TODO: permissions
-        return self.event_rpc.delete(sid, entity_id)

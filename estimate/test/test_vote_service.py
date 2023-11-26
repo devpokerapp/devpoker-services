@@ -7,6 +7,8 @@ from pydantic import ValidationError
 from base.exceptions import NotFound, InvalidFilter
 from poker.models import Poker
 from story.models import Story
+from polling.models import Polling
+from vote.models import Vote
 from event.models import Event
 from participant.models import Participant
 from vote.service import VoteService
@@ -158,4 +160,46 @@ def test_when_placing_vote_before_its_revealed_should_replace_current_vote(monke
     service.event_rpc.create.assert_not_called()
     service.event_rpc.update.assert_called_once()
     service.gateway_rpc.broadcast.assert_called_once()
+    service.dispatch.assert_called_once()
+
+
+def test_when_retrieving_vote_should_return_as_dict(db_session):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id = uuid.uuid4()
+    fake_participant_id = uuid.uuid4()
+    fake_story_id = uuid.uuid4()
+    fake_polling_id = uuid.uuid4()
+    fake_vote_id = uuid.uuid4()
+
+    db_session.add(Poker(id=fake_poker_id, creator='user@test.com'))
+    db_session.commit()
+    db_session.add(Story(id=fake_story_id, name="Story 1", poker_id=fake_poker_id))
+    db_session.add(Participant(id=fake_participant_id, poker_id=fake_poker_id, name="Arthur", sid=fake_sid))
+    db_session.commit()
+    db_session.add(Polling(id=fake_polling_id, story_id=fake_story_id))
+    db_session.commit()
+    db_session.add(Vote(id=fake_vote_id, value="?", polling_id=fake_polling_id, participant_id=fake_participant_id))
+    db_session.commit()
+
+    service = worker_factory(VoteService, db=db_session)
+    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    result = service.retrieve(fake_sid, str(fake_vote_id))
+
+    # assert
+    assert type(result) is dict
+    assert 'id' in result
+    assert type(result['id']) is str
+    assert 'pollingId' in result
+    assert result['pollingId'] == str(fake_polling_id)
+    assert 'participantId' in result
+    assert result['participantId'] == str(fake_participant_id)
+    assert 'value' in result
+    assert result['value'] == "?"
+    assert 'participant' in result
+    assert type(result['participant']) is dict
+    service.gateway_rpc.unicast.assert_called_once()
     service.dispatch.assert_called_once()
