@@ -4,6 +4,7 @@ from uuid import UUID
 
 from base.schemas import APIModel
 from event.schemas import EventRead
+from polling.schemas import PollingRead
 
 
 class StoryRead(APIModel):
@@ -15,6 +16,7 @@ class StoryRead(APIModel):
     description: Optional[str] = None
     value: Optional[str] = None
     events: List[EventRead] = None
+    pollings: List[PollingRead] = None
 
 
 class StoryCreate(APIModel):

@@ -3,6 +3,7 @@ from typing import Optional, List
 from uuid import UUID
 
 from base.schemas import APIModel
+from vote.schemas import VoteRead
 
 
 class PollingRead(APIModel):
@@ -13,7 +14,7 @@ class PollingRead(APIModel):
     completed: bool
     revealed: bool
     story_id: UUID
-    # TODO: votes
+    votes: List[VoteRead] = None
 
 
 class PollingCreate(APIModel):

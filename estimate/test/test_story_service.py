@@ -81,6 +81,10 @@ def test_when_retrieving_story_should_return_as_dict(db_session):
     assert type(result) is dict
     assert 'id' in result
     assert type(result['id']) is str
+    assert 'events' in result
+    assert type(result['events']) is list
+    assert 'pollings' in result
+    assert type(result['pollings']) is list
     service.gateway_rpc.unicast.assert_called_once()
     service.dispatch.assert_called_once()
 
