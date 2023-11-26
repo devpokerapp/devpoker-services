@@ -2,15 +2,11 @@ import uuid
 
 import pytest
 from nameko.testing.services import worker_factory
-from pydantic import ValidationError
 
-from base.exceptions import NotFound, InvalidFilter
 from poker.models import Poker
 from story.models import Story
 from polling.models import Polling
 from polling.service import PollingService
-from participant.models import Participant
-from event.models import Event
 
 
 def test_when_retrieving_polling_should_return_as_dict(db_session):
@@ -25,6 +21,7 @@ def test_when_retrieving_polling_should_return_as_dict(db_session):
     db_session.add(Story(id=fake_story_id, name="Story 1", poker_id=fake_poker_id))
     db_session.commit()
     db_session.add(Polling(id=fake_polling_id, story_id=fake_story_id))
+    db_session.commit()
 
     service = worker_factory(PollingService, db=db_session)
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
@@ -42,5 +39,11 @@ def test_when_retrieving_polling_should_return_as_dict(db_session):
     assert result['storyId'] == str(fake_story_id)
     assert 'votes' in result
     assert type(result['votes']) is list
+    assert 'value' in result
+    assert result['value'] is None
+    assert 'completed' in result
+    assert result['completed'] is False
+    assert 'revealed' in result
+    assert result['revealed'] is False
     service.gateway_rpc.unicast.assert_called_once()
     service.dispatch.assert_called_once()
