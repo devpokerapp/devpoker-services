@@ -30,5 +30,5 @@ class Polling(Model):
         nullable=False
     )
 
-    # TODO: relationships
-    # TODO: schemas
+    story = relationship("Story", back_populates="pollings")
+    votes = relationship("Vote", back_populates="polling")

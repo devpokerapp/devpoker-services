@@ -23,3 +23,6 @@ class Vote(Model):
         ForeignKey("pollings.id", name="fk_votes_polling_id"),
         nullable=False
     )
+
+    participant = relationship("Participant", back_populates="votes")
+    polling = relationship("Polling", back_populates="votes")
