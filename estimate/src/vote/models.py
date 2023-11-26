@@ -9,7 +9,7 @@ class Vote(Model):
 
     value = Column(
         String(),
-        nullable=True
+        nullable=False
     )
 
     participant_id = Column(

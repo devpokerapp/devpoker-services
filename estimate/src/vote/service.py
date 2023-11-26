@@ -1,12 +1,18 @@
 import typing
+import logging
+from uuid import UUID
 
 from nameko.rpc import rpc, RpcProxy
 
 from base.converters import from_uuid
 from base.service import EntityService
+from base.exceptions import NotFound
 from vote.schemas import VotePlace, VoteRead, VoteCreate, VoteUpdate
 from vote.models import Vote
 from polling.models import Polling
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class VoteService(EntityService):
@@ -20,6 +26,7 @@ class VoteService(EntityService):
     broadcast_changes = True
 
     event_rpc = RpcProxy("event_service")
+    polling_rpc = RpcProxy("polling_service")
     participant_rpc = RpcProxy("participant_service")
 
     def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
@@ -35,41 +42,34 @@ class VoteService(EntityService):
 
     @rpc
     def place(self, sid, payload: dict):
-        # TODO: use Vote entity instead of events
         dto = VotePlace(**payload)
-        participant = self.participant_rpc.current(sid=sid)
-        current_creator = participant['id']
 
-        existing = self.event_rpc.query(sid=None, filters=[{
-            "attr": "creator",
-            "value": current_creator
-        }, {
-            "attr": "story_id",
-            "value": str(dto.story_id)
-        }, {
-            "attr": "revealed",
-            "value": "false"
-        }])
-
-        already_placed = len(existing['items']) > 0
-        result: dict
-
-        if already_placed:  # update
-            old = existing['items'][0]
-            result = self.event_rpc.update(sid=sid, entity_id=old['id'], payload={
-                "content": dto.content,
-                "revealed": False,
-            })
-        else:
-            result = self.event_rpc.create(sid=sid, payload={
-                "type": "vote",
-                "content": dto.content,
-                "revealed": False,
-                "story_id": dto.story_id
-            })
+        result = self.create(sid, {
+            "value": dto.value,
+            "pollingId": str(dto.polling_id)
+        })
 
         # will also send the "event_updated" event
-        self.gateway_rpc.broadcast(self.get_room_name(result), "vote_placed", result)
+        # self.gateway_rpc.broadcast(self.get_room_name(result), "vote_placed", result)
         self.dispatch("vote_placed", result)
+
+        return result
+
+    @rpc
+    def create(self, sid, payload: dict) -> dict:
+        participant = self.participant_rpc.current(sid=sid)
+        participant_id = UUID(participant['id'])
+
+        dto = self.dto_create(**payload)
+        entity = self.model(participant_id=participant_id, **dto.model_dump())
+
+        self.db.add(entity)
+        self.db.commit()
+
+        logger.debug(f'created "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
+
+        result = self.dto_read.to_json(entity)
+
+        self.handle_propagate(sid, self.event_created, entity, result)
 
         return result

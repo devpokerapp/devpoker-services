@@ -6,8 +6,8 @@ from participant.schemas import ParticipantRead
 
 
 class VotePlace(APIModel):
-    content: str
-    story_id: UUID
+    value: str
+    polling_id: UUID
 
 
 class VoteRead(APIModel):
