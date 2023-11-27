@@ -76,13 +76,13 @@ class ParticipantService(EntityService):
 
     @rpc
     def current(self, sid) -> dict:
-        participants = self.query(sid=None, filters=[{
-            "attr": "sid",
-            "value": sid
-        }])
+        entity = self.db.query(self.model) \
+            .filter(self.model.sid == sid) \
+            .first()
 
-        if len(participants['items']) < 1:
+        if entity is None:
             raise NotFound()
 
-        participant = participants['items'][0]
-        return participant
+        result = self.dto_read.to_json(entity)
+
+        return result
