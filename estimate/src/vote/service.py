@@ -6,7 +6,7 @@ from nameko.rpc import rpc, RpcProxy
 
 from base.converters import from_uuid
 from base.service import EntityService
-from base.exceptions import NotFound
+from base.exceptions import NotFound, InvalidInput
 from vote.schemas import VotePlace, VoteRead, VoteCreate, VoteUpdate
 from vote.models import Vote
 from polling.models import Polling
@@ -44,13 +44,33 @@ class VoteService(EntityService):
     def place(self, sid, payload: dict):
         dto = VotePlace(**payload)
 
-        result = self.create(sid, {
-            "value": dto.value,
-            "pollingId": str(dto.polling_id)
-        })
+        participant = self.participant_rpc.current(sid=sid)
+        participant_id = UUID(participant['id'])
 
-        # will also send the "event_updated" event
-        # self.gateway_rpc.broadcast(self.get_room_name(result), "vote_placed", result)
+        polling = self.polling_rpc.retrieve(sid=None, entity_id=str(dto.polling_id))
+
+        if polling["completed"]:
+            raise InvalidInput()
+
+        entity = self.db.query(self.model) \
+            .filter(self.model.polling_id == dto.polling_id) \
+            .filter(self.model.participant_id == participant_id) \
+            .first()
+
+        result: dict
+
+        if entity is None:
+            result = self.create(sid, {
+                "value": dto.value,
+                "pollingId": str(dto.polling_id)
+            })
+        else:  # vote already exists
+            result = self.update(sid, str(entity.id), {
+                "value": dto.value
+            })
+
+        room_name = f"story:{polling['storyId']}"
+        self.gateway_rpc.broadcast(room_name, "vote_placed", result)
         self.dispatch("vote_placed", result)
 
         return result
