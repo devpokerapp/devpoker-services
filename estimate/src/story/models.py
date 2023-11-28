@@ -30,4 +30,3 @@ class Story(Model):
 
     poker = relationship("Poker", back_populates="stories")
     events = relationship("Event", back_populates="story")
-    pollings = relationship("Polling", back_populates="story")

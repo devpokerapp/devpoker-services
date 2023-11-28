@@ -207,12 +207,12 @@ class EntityService(BaseService):
         if old is None:
             raise NotFound()
 
+        result = self.dto_read.to_json(old)
+
         self.db.delete(old)
         self.db.commit()
 
         logger.debug(f'delete "{self.entity_name}" entity! {old.id}; {old.to_dict()}')
-
-        result = self.dto_read.to_json(old)
 
         self.handle_propagate(sid, self.event_deleted, old, result)
 
