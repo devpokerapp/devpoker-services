@@ -36,7 +36,8 @@ def upgrade() -> None:
         "pollings",
         "stories",
         ["story_id"],
-        ["id"]
+        ["id"],
+        ondelete="CASCADE"
     )
 
     op.create_table(
@@ -54,7 +55,8 @@ def upgrade() -> None:
         "votes",
         "pollings",
         ["polling_id"],
-        ["id"]
+        ["id"],
+        ondelete="CASCADE"
     )
 
     op.add_column("votes", sa.Column("participant_id", sa.Uuid(), nullable=False))
@@ -63,7 +65,8 @@ def upgrade() -> None:
         "votes",
         "participants",
         ["participant_id"],
-        ["id"]
+        ["id"],
+        ondelete="CASCADE"
     )
 
 
