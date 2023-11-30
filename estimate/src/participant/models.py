@@ -25,3 +25,4 @@ class Participant(Model):
     # TODO: participant connection status
 
     poker = relationship("Poker", back_populates="participants")
+    votes = relationship("Vote", back_populates="participant")

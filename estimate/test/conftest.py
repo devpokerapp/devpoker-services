@@ -7,6 +7,8 @@ from poker.models import Poker
 from story.models import Story
 from event.models import Event
 from participant.models import Participant
+from polling.models import Polling
+from vote.models import Vote
 
 
 @pytest.fixture(scope='session')
