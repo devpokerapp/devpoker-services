@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Boolean, Uuid, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from base.models import Model
 
@@ -20,9 +20,9 @@ class Vote(Model):
 
     polling_id = Column(
         Uuid(),
-        ForeignKey("pollings.id", name="fk_votes_polling_id"),
+        ForeignKey("pollings.id", name="fk_votes_polling_id", ondelete="CASCADE"),
         nullable=False
     )
 
     participant = relationship("Participant", back_populates="votes")
-    polling = relationship("Polling", back_populates="votes")
+    polling = relationship("Polling", backref=backref("votes", cascade="all, delete-orphan"))

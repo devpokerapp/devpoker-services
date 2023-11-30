@@ -31,4 +31,3 @@ class Polling(Model):
     )
 
     story = relationship("Story", backref=backref("pollings", cascade="all, delete-orphan"))
-    votes = relationship("Vote", back_populates="polling")
