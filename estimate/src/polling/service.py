@@ -61,11 +61,6 @@ class PollingService(EntityService):
         return result
 
     @rpc
-    def restart(self, sid, story_id):
-        # TODO: complete old polling and creates a new one
-        pass
-
-    @rpc
     def complete(self, sid, payload):
         dto = PollingComplete(**payload)
 
@@ -85,3 +80,23 @@ class PollingService(EntityService):
         self.gateway_rpc.broadcast(room_name, 'polling_completed', result)
 
         return result
+
+    @rpc
+    def restart(self, sid, entity_id):
+        original = self.retrieve(sid=None, entity_id=entity_id)
+        story_id = original["storyId"]
+
+        # completes current polling
+        completed = self.update(sid=sid, entity_id=entity_id, payload={
+            **original,
+            "completed": True,
+        })
+
+        # starts a new polling
+        result = self.create(sid=sid, payload={
+            "storyId": story_id
+        })
+
+        room_name = f'story:{story_id}'
+        self.dispatch('polling_restarted', result)
+        self.gateway_rpc.broadcast(room_name, 'polling_restarted', result)
