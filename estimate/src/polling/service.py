@@ -69,23 +69,19 @@ class PollingService(EntityService):
     def complete(self, sid, payload):
         dto = PollingComplete(**payload)
 
-        entity: Optional[Polling] = self.db.query(Polling) \
-            .filter(Polling.id == dto.id) \
-            .first()
+        original = self.retrieve(sid=None, entity_id=dto.id)
 
-        if entity is None:
-            raise NotFound()
+        result = self.update(sid=sid, entity_id=dto.id, payload={
+            "value": dto.value,
+            "completed": True,
+            "revealed": True,
+            "storyId": original["storyId"],
+        })
 
-        entity.value = dto.value
-        entity.completed = True
+        logger.debug(f'completed "{self.entity_name}" entity! {result["id"]};')
 
-        self.db.commit()
-
-        logger.debug(f'completed "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
-
-        result = self.dto_read.to_json(entity)
-
-        self.handle_propagate(sid, 'polling_completed', entity, result)
-        self.handle_propagate(sid, self.event_updated, entity, result)
+        room_name = f'story:{result["storyId"]}'
+        self.dispatch('polling_completed', result)
+        self.gateway_rpc.broadcast(room_name, 'polling_completed', result)
 
         return result

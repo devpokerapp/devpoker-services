@@ -137,7 +137,7 @@ def test_when_completing_polling_should_return_completed_as_dict(db_session):
     assert 'completed' in result
     assert result['completed'] is True
     assert 'revealed' in result
-    assert result['revealed'] is False
+    assert result['revealed'] is True
     service.gateway_rpc.broadcast.assert_called()
     service.dispatch.assert_called()
 

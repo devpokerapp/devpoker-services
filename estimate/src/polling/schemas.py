@@ -29,5 +29,5 @@ class PollingUpdate(APIModel):
 
 
 class PollingComplete(APIModel):
-    id: UUID
+    id: str
     value: str
