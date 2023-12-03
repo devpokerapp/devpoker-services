@@ -2,6 +2,7 @@ import typing
 from uuid import UUID
 
 from nameko.rpc import rpc, RpcProxy
+from nameko.events import event_handler
 
 from base.schemas import APIModel
 from base.service import EntityService
@@ -32,8 +33,23 @@ class StoryService(EntityService):
         story: Story = entity
         return str(story.poker_id)
 
+    @event_handler("polling_service", "polling_completed")
+    def handle_polling_completed(self, payload: dict):
+        story_id = payload["storyId"]
+        value = payload["value"]
+
+        story = self.retrieve(sid=None, entity_id=story_id)
+
+        self.update(sid=None, entity_id=story_id, payload={
+            "name": story["name"],
+            "description": story["description"],
+            "pokerId": story["pokerId"],
+            "value": value
+        })
+
     @rpc
     def reveal(self, sid, entity_id: str):
+        # TODO: remove this method
         unrevealed_events = self.event_rpc.query(sid=None, filters=[{
             "attr": "story_id",
             "value": entity_id
