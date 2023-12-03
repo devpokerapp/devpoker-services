@@ -3,7 +3,7 @@ import logging
 from typing import Optional
 from uuid import UUID
 
-from nameko.rpc import rpc
+from nameko.rpc import rpc, RpcProxy
 from nameko.events import event_handler
 
 from base.exceptions import NotFound
@@ -66,6 +66,26 @@ class PollingService(EntityService):
         pass
 
     @rpc
-    def complete(self, sid, story_id):
-        # TODO: close the current polling. must define a value
-        pass
+    def complete(self, sid, payload):
+        dto = PollingComplete(**payload)
+
+        entity: Optional[Polling] = self.db.query(Polling) \
+            .filter(Polling.id == dto.id) \
+            .first()
+
+        if entity is None:
+            raise NotFound()
+
+        entity.value = dto.value
+        entity.completed = True
+
+        self.db.commit()
+
+        logger.debug(f'completed "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
+
+        result = self.dto_read.to_json(entity)
+
+        self.handle_propagate(sid, 'polling_completed', entity, result)
+        self.handle_propagate(sid, self.event_updated, entity, result)
+
+        return result

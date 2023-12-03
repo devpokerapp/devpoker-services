@@ -26,3 +26,8 @@ class PollingUpdate(APIModel):
     completed: bool
     revealed: bool
     story_id: UUID
+
+
+class PollingComplete(APIModel):
+    id: UUID
+    value: str
