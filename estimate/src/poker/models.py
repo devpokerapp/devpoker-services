@@ -11,6 +11,8 @@ class Poker(Model):
         nullable=False
     )
 
+    vote_pattern = Column(String(), nullable=False, server_default="0,1,2,3,5,8,13,?,__coffee")
+
     current_story_id = Column(
         Uuid(),
         # FIXME: foreign key causing circular import

@@ -12,6 +12,7 @@ class PokerCreate(APIModel):
 
 
 class PokerUpdate(PokerCreate):
+    vote_pattern: str
     current_story_id: UUID | None
 
 
@@ -20,6 +21,7 @@ class PokerRead(APIModel):
     created_at: datetime
     updated_at: datetime
     creator: str
+    vote_pattern: str
     current_story_id: UUID | None
     stories: List[StoryRead] = None
     participants: List[ParticipantRead] = None
