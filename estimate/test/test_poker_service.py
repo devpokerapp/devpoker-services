@@ -30,7 +30,7 @@ def test_when_creating_poker_should_return_as_dict(db_session):
     assert type(result['stories']) is list
     assert 'participants' in result
     assert type(result['participants']) is list
-    service.gateway_rpc.unicast.assert_called_once()
+    service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
 
 
