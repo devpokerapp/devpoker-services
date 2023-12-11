@@ -73,6 +73,7 @@ class PokerService(EntityService):
 
         updated = self.update(sid=None, entity_id=poker_id, payload={
             "creator": poker['creator'],
+            "vote_pattern": poker['votePattern'],
             "current_story_id": story_id
         })
 
