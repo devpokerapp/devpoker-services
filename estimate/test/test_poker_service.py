@@ -30,7 +30,7 @@ def test_when_creating_poker_should_return_as_dict(db_session):
     assert type(result['stories']) is list
     assert 'participants' in result
     assert type(result['participants']) is list
-    service.gateway_rpc.unicast.assert_called_once()
+    service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
 
 
@@ -239,6 +239,7 @@ def test_when_selecting_story_should_return_story_dict(db_session, monkeypatch):
         return {
             'id': str(fake_poker_id),
             'creator': 'user@test.com',
+            'votePattern': '0,1,2,3,5,?',
             'current_story_id': None
         }
 
@@ -303,6 +304,7 @@ def test_when_selecting_story_with_none_should_unselect(db_session, monkeypatch)
         return {
             'id': str(fake_poker_id),
             'creator': 'user@test.com',
+            'votePattern': '0,1,2,3,5,?',
             'current_story_id': None
         }
 

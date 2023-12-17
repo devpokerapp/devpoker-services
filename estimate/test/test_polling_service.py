@@ -67,6 +67,7 @@ def test_when_getting_current_polling_should_return_last_not_completed_as_dict(d
     db_session.add(Polling(id=fake_polling_id_completed, story_id=fake_story_id, completed=True, revealed=True))
     db_session.add(Polling(id=fake_polling_id_opened1, story_id=fake_story_id, completed=False, revealed=True))
     db_session.add(Polling(id=fake_polling_id_opened2, story_id=fake_story_id, completed=False, revealed=True))
+    db_session.commit()
     db_session.add(Polling(id=fake_polling_id_current, story_id=fake_story_id, completed=False, revealed=True))
     db_session.commit()
 

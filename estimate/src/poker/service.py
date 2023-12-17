@@ -19,9 +19,14 @@ class PokerService(EntityService):
     dto_read = PokerRead
     dto_create = PokerCreate
     dto_update = PokerUpdate
+    broadcast_changes = True
 
     story_rpc = RpcProxy("story_service")
     participant_rpc = RpcProxy("participant_service")
+
+    def get_room_name(self, entity) -> str:
+        poker: Poker = entity
+        return str(poker.id)
 
     @rpc
     def join(self, sid: str, participant_id: str, poker_id: str):
@@ -68,6 +73,7 @@ class PokerService(EntityService):
 
         updated = self.update(sid=None, entity_id=poker_id, payload={
             "creator": poker['creator'],
+            "vote_pattern": poker['votePattern'],
             "current_story_id": story_id
         })
 
