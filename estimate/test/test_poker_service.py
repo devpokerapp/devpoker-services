@@ -239,6 +239,7 @@ def test_when_selecting_story_should_return_story_dict(db_session, monkeypatch):
         return {
             'id': str(fake_poker_id),
             'creator': 'user@test.com',
+            'votePattern': '0,1,2,3,5,?',
             'current_story_id': None
         }
 
@@ -303,6 +304,7 @@ def test_when_selecting_story_with_none_should_unselect(db_session, monkeypatch)
         return {
             'id': str(fake_poker_id),
             'creator': 'user@test.com',
+            'votePattern': '0,1,2,3,5,?',
             'current_story_id': None
         }
 
