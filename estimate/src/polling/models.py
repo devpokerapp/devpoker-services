@@ -30,4 +30,4 @@ class Polling(Model):
         nullable=False
     )
 
-    story = relationship("Story", backref=backref("pollings", cascade="all, delete-orphan"))
+    story = relationship("Story", backref=backref("pollings", cascade="all, delete-orphan", order_by='Polling.created_at'))
