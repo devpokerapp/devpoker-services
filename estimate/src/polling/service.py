@@ -12,7 +12,9 @@ from base.service import EntityService
 from polling.models import Polling
 from polling.schemas import PollingRead, PollingCreate, PollingUpdate, PollingComplete
 
+# TODO: global logger instance
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class PollingService(EntityService):
@@ -73,7 +75,7 @@ class PollingService(EntityService):
             "storyId": original["storyId"],
         })
 
-        logger.debug(f'completed "{self.entity_name}" entity! {result["id"]};')
+        logger.debug(f'completed "{self.entity_name}" entity! {result["id"]}; {result}')
 
         room_name = f'story:{result["storyId"]}'
         self.dispatch('polling_completed', result)
@@ -96,6 +98,8 @@ class PollingService(EntityService):
         result = self.create(sid=sid, payload={
             "storyId": story_id
         })
+
+        logger.debug(f'restarted "{self.entity_name}" entity! {result["id"]}; {result}')
 
         room_name = f'story:{story_id}'
         self.dispatch('polling_restarted', result)

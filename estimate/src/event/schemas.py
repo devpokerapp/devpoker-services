@@ -5,11 +5,14 @@ from uuid import UUID
 from base.schemas import APIModel
 
 
+EventType = Literal["vote", "comment", "action", "complete", "restart"]
+
+
 class EventRead(APIModel):
     id: UUID
     created_at: datetime
     updated_at: datetime
-    type: Literal["vote", "comment", "action"]
+    type: EventType
     content: str
     creator: str
     revealed: bool
@@ -17,7 +20,7 @@ class EventRead(APIModel):
 
 
 class EventCreate(APIModel):
-    type: Literal["vote", "comment", "action"]
+    type: EventType
     content: str
     revealed: bool
     story_id: UUID
