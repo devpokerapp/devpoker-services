@@ -14,15 +14,15 @@ services:
       - 15672:15672
     networks:
       - devpoker-network
-  
+
   adminer:
     image: adminer
     container_name: devpoker-adminer
     ports:
-      - 8080:8080
+      - 8032:8080
     networks:
       - devpoker-network
-  
+
   db:
     image: postgres:13
     container_name: devpoker-db
@@ -36,7 +36,27 @@ services:
       - 5432:5432
     networks:
       - devpoker-network
-  
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.4
+    container_name: devpoker-keycloak
+    command: start-dev
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://db:5432/keycloak
+      - KC_DB_USERNAME=postgres
+      - KC_DB_PASSWORD=postgres
+      - KC_HOSTNAME=localhost
+    ports:
+      - 8080:8080
+    networks:
+      - devpoker-network
+    depends_on:
+      db:
+        condition: service_started
+
   gateway:
     image: devpoker-gateway
     container_name: devpoker-gateway
@@ -56,7 +76,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-  
+
   estimate:
     image: devpoker-estimate
     container_name: devpoker-estimate
@@ -78,6 +98,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      db:
+        condition: service_started
 
 networks:
   devpoker-network:
