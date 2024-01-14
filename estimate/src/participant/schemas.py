@@ -12,12 +12,14 @@ class ParticipantRead(APIModel):
     name: str
     sid: str
     poker_id: UUID
+    keycloak_user_id: Optional[str] = None
 
 
 class ParticipantCreate(APIModel):
     name: str
     # sid: str # provided by gateway
     poker_id: UUID
+    keycloak_user_id: Optional[str] = None
 
 
 class ParticipantUpdate(ParticipantCreate):

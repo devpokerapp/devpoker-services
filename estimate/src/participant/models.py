@@ -16,6 +16,11 @@ class Participant(Model):
         nullable=False
     )
 
+    keycloak_user_id = Column(
+        String(),
+        nullable=True
+    )
+
     poker_id = Column(
         Uuid(),
         ForeignKey("pokers.id", name="fk_stories_poker_id"),
