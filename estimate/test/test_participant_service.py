@@ -16,8 +16,7 @@ def test_when_creating_participant_should_return_as_dict(db_session):
     fake_payload = {
         'sid': fake_sid,
         'name': 'Arthur',
-        'pokerId': str(fake_poker_id),
-        'keycloakUserId': None
+        'pokerId': str(fake_poker_id)
     }
 
     service = worker_factory(ParticipantService, db=db_session)
