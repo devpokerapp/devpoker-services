@@ -27,7 +27,8 @@ class ParticipantService(EntityService):
     def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
         return {
             'sid': from_str,
-            'poker_id': from_uuid
+            'poker_id': from_uuid,
+            'keycloak_user_id': from_str
         }
 
     def get_room_name(self, entity):
