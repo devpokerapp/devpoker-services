@@ -38,7 +38,9 @@ services:
       - devpoker-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0.4
+    build:
+      context: ../keycloak
+      dockerfile: Dockerfile
     container_name: devpoker-keycloak
     command: start-dev
     environment:
