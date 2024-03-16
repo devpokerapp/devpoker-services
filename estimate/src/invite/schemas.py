@@ -19,5 +19,5 @@ class InviteCreate(APIModel):
     expires_at: datetime
 
 
-class InviteUpdate(InviteCreate):
+class InviteUpdate(APIModel):
     pass
