@@ -23,7 +23,7 @@ class Participant(Model):
 
     poker_id = Column(
         Uuid(),
-        ForeignKey("pokers.id", name="fk_stories_poker_id"),
+        ForeignKey("pokers.id", name="participants_poker_id"),
         nullable=False
     )
 
