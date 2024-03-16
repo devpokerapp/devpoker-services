@@ -23,5 +23,3 @@ class Invite(Model):
     )
 
     poker = relationship("Poker", back_populates="invites")
-
-
