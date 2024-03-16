@@ -1,5 +1,6 @@
 import logging
 import typing
+import datetime
 from uuid import UUID
 
 from nameko.rpc import rpc
@@ -53,3 +54,13 @@ class InviteService(EntityService):
         self.handle_propagate(sid, self.event_created, entity, result)
 
         return result
+    
+    @rpc
+    def validate(self, code: str, poker_id: UUID):
+        now = datetime.datetime.now()
+        entity = self.db.query(Invite) \
+            .filter(Invite.code == code) \
+            .filter(Invite.poker_id == poker_id) \
+            .filter(Invite.expires_at > now) \
+            .first()
+        return entity is not None

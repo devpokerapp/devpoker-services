@@ -1,10 +1,12 @@
 import uuid
+import datetime
 
 import pytest
 from nameko.testing.services import worker_factory
 from pydantic import ValidationError
 
 from base.exceptions import NotFound
+from poker.models import Poker
 from invite.models import Invite
 from invite.service import InviteService
 
@@ -87,3 +89,76 @@ def test_when_creating_invite_with_code_should_be_different_from_last_one(db_ses
     assert 'code' in first_result
     assert 'code' in second_result
     assert first_result['code'] != second_result['code']
+
+
+def test_when_validating_invite_should_return_boolean(db_session):
+    # arrange
+    fake_invite_code = 'foobarbaz'
+    fake_poker_id = uuid.uuid4()
+    fake_invite_id = uuid.uuid4()
+    fake_invite_expires_at = datetime.datetime.now() + datetime.timedelta(days=1)
+
+    db_session.add(Poker(id=fake_poker_id, creator='user@test.com'))
+    db_session.add(Invite(id=fake_invite_id, code=fake_invite_code,
+                          expires_at=fake_invite_expires_at, poker_id=fake_poker_id))
+    db_session.commit()
+
+    service = worker_factory(InviteService, db=db_session)
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    result = service.validate(code=fake_invite_code, poker_id=fake_poker_id)
+
+    # assert
+    assert type(result) is bool
+    assert result is True
+
+
+def test_when_validating_invite_with_wrong_code_should_return_false(db_session):
+    # arrange
+    fake_invite_code = 'foobarbaz'
+    fake_invalid_invite_code = 'hello'
+    fake_poker_id = uuid.uuid4()
+    fake_invite_id = uuid.uuid4()
+    fake_invite_expires_at = datetime.datetime.now() + datetime.timedelta(days=1)
+
+    db_session.add(Poker(id=fake_poker_id, creator='user@test.com'))
+    db_session.add(Invite(id=fake_invite_id, code=fake_invite_code,
+                          expires_at=fake_invite_expires_at, poker_id=fake_poker_id))
+    db_session.commit()
+
+    service = worker_factory(InviteService, db=db_session)
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    result = service.validate(code=fake_invalid_invite_code, poker_id=fake_poker_id)
+
+    # assert
+    assert type(result) is bool
+    assert result is False
+
+
+def test_when_validating_expired_invite_should_return_false(db_session):
+    # arrange
+    fake_invite_code = 'foobarbaz'
+    fake_poker_id = uuid.uuid4()
+    fake_invite_id = uuid.uuid4()
+    fake_invite_expires_at = datetime.datetime.now() - datetime.timedelta(days=1)
+
+    db_session.add(Poker(id=fake_poker_id, creator='user@test.com'))
+    db_session.add(Invite(id=fake_invite_id, code=fake_invite_code,
+                          expires_at=fake_invite_expires_at, poker_id=fake_poker_id))
+    db_session.commit()
+
+    service = worker_factory(InviteService, db=db_session)
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    result = service.validate(code=fake_invite_code, poker_id=fake_poker_id)
+
+    # assert
+    assert type(result) is bool
+    assert result is False
