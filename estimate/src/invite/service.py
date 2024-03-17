@@ -26,7 +26,7 @@ class InviteService(EntityService):
     dto_read = InviteRead
     dto_create = InviteCreate
     dto_update = InviteUpdate
-    broadcast_changes = True
+    broadcast_changes = False
 
     def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
         return {

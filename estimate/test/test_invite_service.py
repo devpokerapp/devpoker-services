@@ -20,7 +20,7 @@ def test_when_creating_invite_should_return_as_dict(db_session):
     }
     
     service = worker_factory(InviteService, db=db_session)
-    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
@@ -30,7 +30,7 @@ def test_when_creating_invite_should_return_as_dict(db_session):
     assert type(result) is dict
     assert 'id' in result
     assert type(result['id']) is str
-    service.gateway_rpc.broadcast.assert_called_once()
+    service.gateway_rpc.unicast.assert_called_once()
     service.dispatch.assert_called_once()
 
 
@@ -46,7 +46,7 @@ def test_when_creating_invite_with_code_should_ignore_and_generate_fixed_size_st
     }
     
     service = worker_factory(InviteService, db=db_session)
-    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
@@ -60,7 +60,7 @@ def test_when_creating_invite_with_code_should_ignore_and_generate_fixed_size_st
     assert type(result['code']) is str
     assert not result['code'] == fake_code_to_be_ignored
     assert len(result['code']) == 48
-    service.gateway_rpc.broadcast.assert_called_once()
+    service.gateway_rpc.unicast.assert_called_once()
     service.dispatch.assert_called_once()
 
 
@@ -104,8 +104,6 @@ def test_when_validating_invite_should_return_boolean(db_session):
     db_session.commit()
 
     service = worker_factory(InviteService, db=db_session)
-    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
-    service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
     result = service.validate(code=fake_invite_code, poker_id=fake_poker_id)
@@ -129,8 +127,6 @@ def test_when_validating_invite_with_wrong_code_should_return_false(db_session):
     db_session.commit()
 
     service = worker_factory(InviteService, db=db_session)
-    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
-    service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
     result = service.validate(code=fake_invalid_invite_code, poker_id=fake_poker_id)
@@ -153,8 +149,6 @@ def test_when_validating_expired_invite_should_return_false(db_session):
     db_session.commit()
 
     service = worker_factory(InviteService, db=db_session)
-    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
-    service.dispatch.side_effect = lambda *args, **kwargs: None
 
     # act
     result = service.validate(code=fake_invite_code, poker_id=fake_poker_id)
