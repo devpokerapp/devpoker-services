@@ -5,7 +5,7 @@ import pytest
 from nameko.testing.services import worker_factory
 from pydantic import ValidationError
 
-from base.exceptions import NotFound
+from base.exceptions import NotFound, NotAllowed
 from poker.models import Poker
 from invite.models import Invite
 from invite.service import InviteService
@@ -156,3 +156,16 @@ def test_when_validating_expired_invite_should_return_false(db_session):
     # assert
     assert type(result) is bool
     assert result is False
+
+
+def test_when_listing_invites_should_cause_error(db_session):
+    # arrange
+    fake_sid = '1aaa'
+    fake_filters = []
+
+    service = worker_factory(InviteService, db=db_session)
+
+    # act
+    # assert
+    with pytest.raises(NotAllowed):
+        result = service.query(fake_sid, fake_filters)

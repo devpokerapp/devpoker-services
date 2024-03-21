@@ -26,7 +26,6 @@ class PokerRead(APIModel):
     current_story_id: Optional[UUID]
     stories: List[StoryRead] = None
     participants: List[ParticipantRead] = None
-    invites: List[InviteRead] = None
 
 
 class PokerContext(SimpleModel):

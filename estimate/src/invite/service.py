@@ -6,7 +6,7 @@ from uuid import UUID
 from nameko.rpc import rpc
 
 from base.converters import from_uuid, from_str
-from base.exceptions import NotFound
+from base.exceptions import NotFound, NotAllowed
 from base.service import EntityService
 from invite.models import Invite
 from invite.schemas import InviteRead, InviteCreate, InviteUpdate
@@ -28,14 +28,13 @@ class InviteService(EntityService):
     dto_update = InviteUpdate
     broadcast_changes = False
 
-    def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
-        return {
-            'poker_id': from_uuid,
-        }
-
     def get_room_name(self, entity):
         invite: Invite = entity
         return str(invite.poker_id)
+    
+    @rpc
+    def query(self, sid, filters: list[dict]) -> dict:
+        raise NotAllowed()
     
     @rpc
     def create(self, sid, payload: dict) -> dict:
