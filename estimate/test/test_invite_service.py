@@ -15,7 +15,7 @@ def test_when_creating_invite_should_return_as_dict(db_session):
     fake_sid = '1aaa'
     fake_poker_id = uuid.uuid4()
     fake_payload = {
-        'expiresAt': '2024-03-16 10:46:08',
+        'expiresAt': '2024-03-16T15:11:24.736Z',
         'pokerId': str(fake_poker_id)
     }
     
@@ -40,7 +40,7 @@ def test_when_creating_invite_with_code_should_ignore_and_generate_fixed_size_st
     fake_poker_id = uuid.uuid4()
     fake_code_to_be_ignored = 'foobarbazfoobarbazfoobarbaz'
     fake_payload = {
-        'expiresAt': '2024-03-16 10:46:08',
+        'expiresAt': '2024-03-16T15:11:24.736Z',
         'pokerId': str(fake_poker_id),
         'code': fake_code_to_be_ignored
     }
@@ -70,7 +70,7 @@ def test_when_creating_invite_with_code_should_be_different_from_last_one(db_ses
     fake_poker_id = uuid.uuid4()
     fake_code_to_be_ignored = 'foobarbazfoobarbazfoobarbaz'
     fake_payload = {
-        'expiresAt': '2024-03-16 10:46:08',
+        'expiresAt': '2024-03-16T15:11:24.736Z',
         'pokerId': str(fake_poker_id),
         'code': fake_code_to_be_ignored
     }
