@@ -58,6 +58,7 @@ def test_when_retrieving_poker_should_return_as_dict(db_session):
     db_session.commit()
 
     service = worker_factory(PokerService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_entity_id
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -81,6 +82,7 @@ def test_when_retrieving_non_existing_poker_should_return_error(db_session):
     fake_entity_id = uuid.uuid4()
 
     service = worker_factory(PokerService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: None
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -326,3 +328,26 @@ def test_when_selecting_story_with_none_should_unselect(db_session, monkeypatch)
     assert result is None
     service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
+
+
+def test_when_retrieving_poker_without_being_participant_should_return_not_found(db_session):
+    # arrange
+    fake_sid = '1aaa'
+    fake_entity_id = uuid.uuid4()
+    fake_wrong_entity_id = uuid.uuid4()
+
+    db_session.add(Poker(id=fake_entity_id, creator='user@test.com'))
+    db_session.commit()
+
+    def fake_get_current_poker_id(*args, **kwargs):
+        return fake_wrong_entity_id
+
+    service = worker_factory(PokerService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = fake_get_current_poker_id
+    service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    # assert
+    with pytest.raises(NotFound):
+        result = service.retrieve(fake_sid, str(fake_entity_id))

@@ -86,6 +86,12 @@ class EntityService(BaseService):
     def get_room_name(self, entity) -> str:
         pass
 
+    def get_base_query(self):
+        """
+        Used to apply filters to all queried data inside the service
+        """
+        return self.db.query(self.model)
+
     def handle_propagate(self, sid, event: str, entity, payload: dict):
         self.dispatch(event, payload)
 
@@ -117,7 +123,7 @@ class EntityService(BaseService):
                 raise InvalidFilter(filter.attr)
             applied_filters.append(getattr(self.model, filter.attr) == converted_value)
 
-        entities = self.db.query(self.model) \
+        entities = self.get_base_query() \
             .filter(*applied_filters) \
             .all()
 
@@ -139,7 +145,7 @@ class EntityService(BaseService):
     def retrieve(self, sid, entity_id: str) -> dict:
         entity_id = UUID(entity_id)
 
-        entity = self.db.query(self.model) \
+        entity = self.get_base_query() \
             .filter(self.model.id == entity_id) \
             .first()
 
@@ -173,7 +179,7 @@ class EntityService(BaseService):
     def update(self, sid, entity_id: str, payload: dict) -> dict:
         entity_id = UUID(entity_id)
 
-        entity = self.db.query(self.model) \
+        entity = self.get_base_query() \
             .filter(self.model.id == entity_id) \
             .first()
 
@@ -200,7 +206,7 @@ class EntityService(BaseService):
     def delete(self, sid, entity_id: str) -> dict:
         entity_id = UUID(entity_id)
 
-        old = self.db.query(self.model) \
+        old = self.get_base_query() \
             .filter(self.model.id == entity_id) \
             .first()
 

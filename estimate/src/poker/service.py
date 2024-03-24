@@ -1,5 +1,6 @@
 import logging
 import datetime
+from uuid import UUID
 from typing import Union
 
 from nameko.rpc import rpc, RpcProxy
@@ -31,6 +32,10 @@ class PokerService(EntityService):
     def get_room_name(self, entity) -> str:
         poker: Poker = entity
         return str(poker.id)
+
+    def get_base_query(self):
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id()
+        return self.db.query(Poker).filter(Poker.id == current_poker_id)
 
     @rpc
     def start(self, sid, payload: dict) -> dict:
