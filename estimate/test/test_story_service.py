@@ -484,9 +484,9 @@ def test_when_revealing_votes_for_story_should_return_story_as_dict(db_session):
     db_session.add(Participant(id=fake_participant_id2, poker_id=fake_poker_id1, name="Bruno", sid=fake_sid))
     db_session.commit()
     db_session.add(Event(id=fake_event_id1, type="vote", content="5", revealed=False, creator=str(fake_participant_id1),
-                         story_id=fake_story_id1))
+                         story_id=fake_story_id1, poker_id=fake_poker_id1))
     db_session.add(Event(id=fake_event_id2, type="vote", content="2", revealed=False, creator=str(fake_participant_id2),
-                         story_id=fake_story_id1))
+                         story_id=fake_story_id1, poker_id=fake_poker_id1))
     db_session.commit()
 
     def fake_event_query(*args, **kwargs):

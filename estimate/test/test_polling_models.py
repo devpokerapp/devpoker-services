@@ -18,7 +18,7 @@ def test_creating_polling_should_fill_completion_flags(db_session):
     db_session.add(Story(id=fake_story_id, name="Story 1", poker_id=fake_poker_id))
     db_session.commit()
     
-    polling = Polling(story_id=fake_story_id)
+    polling = Polling(story_id=fake_story_id, poker_id=fake_poker_id)
     
     # act
     db_session.add(polling)
@@ -50,8 +50,8 @@ def test_deleting_story_should_delete_all_its_pollings(db_session: Session):
     db_session.add(story)
     db_session.commit()
 
-    polling1 = Polling(id=fake_polling_id1, story_id=fake_story_id)
-    polling2 = Polling(id=fake_polling_id2, story_id=fake_story_id)
+    polling1 = Polling(id=fake_polling_id1, story_id=fake_story_id, poker_id=fake_poker_id)
+    polling2 = Polling(id=fake_polling_id2, story_id=fake_story_id, poker_id=fake_poker_id)
     db_session.add(polling1)
     db_session.add(polling2)
     db_session.commit()
