@@ -33,5 +33,5 @@ class ParticipantCreated(ParticipantRead):
     secret_key: str
 
 
-class ParticipantUpdate(ParticipantCreate):
+class ParticipantUpdate(APIModel):
     secret_key: str
