@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from base.schemas import APIModel, SimpleModel
 from story.schemas import StoryRead
 from participant.schemas import ParticipantRead
+from invite.schemas import InviteRead
 
 
 class PokerCreate(APIModel):

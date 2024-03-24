@@ -23,3 +23,4 @@ class Poker(Model):
     # TODO: current_story
     stories = relationship("Story", back_populates="poker")
     participants = relationship("Participant", back_populates="poker")
+    invites = relationship("Invite", back_populates="poker")

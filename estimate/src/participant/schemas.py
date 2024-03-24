@@ -15,6 +15,13 @@ class ParticipantRead(APIModel):
     keycloak_user_id: Optional[str] = None
 
 
+class ParticipantCreateWithInvite(APIModel):
+    name: str
+    poker_id: UUID
+    keycloak_user_id: Optional[str] = None
+    invite_code: str
+
+
 class ParticipantCreate(APIModel):
     name: str
     # sid: str # provided by gateway

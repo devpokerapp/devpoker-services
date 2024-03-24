@@ -2,13 +2,14 @@ import logging
 import typing
 from uuid import UUID
 
-from nameko.rpc import rpc
+from nameko.rpc import rpc, RpcProxy
 
 from base.converters import from_uuid, from_str
 from base.exceptions import NotFound
 from base.service import EntityService
 from participant.models import Participant
-from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate
+from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate, ParticipantCreateWithInvite
+from participant.exceptions import InvalidInviteCode
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -24,6 +25,8 @@ class ParticipantService(EntityService):
     dto_update = ParticipantUpdate
     broadcast_changes = True
 
+    invite_rpc = RpcProxy('invite_service')
+
     def get_query_column_converters(self) -> typing.Dict[str, typing.Callable[[any], str]]:
         return {
             'sid': from_str,
@@ -37,8 +40,15 @@ class ParticipantService(EntityService):
 
     @rpc
     def create(self, sid, payload: dict) -> dict:
-        dto = self.dto_create(**payload)
-        entity = self.model(sid=sid, **dto.model_dump())
+        dto = ParticipantCreateWithInvite(**payload)
+        
+        valid = self.invite_rpc.validate(code=dto.invite_code, poker_id=dto.poker_id)
+        if not valid:
+            raise InvalidInviteCode()
+        
+        model_dto = ParticipantCreate(name=dto.name, poker_id=dto.poker_id,
+                                      keycloak_user_id=dto.keycloak_user_id)
+        entity = self.model(sid=sid, **model_dto.model_dump())
 
         self.db.add(entity)
         self.db.commit()

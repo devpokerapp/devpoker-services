@@ -9,6 +9,7 @@ from event.models import Event
 from participant.models import Participant
 from polling.models import Polling
 from vote.models import Vote
+from invite.models import Invite
 
 
 @pytest.fixture(scope='session')

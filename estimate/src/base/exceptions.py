@@ -2,6 +2,10 @@ class NotFound(Exception):
     pass
 
 
+class NotAllowed(Exception):
+    pass
+
+
 class InvalidInput(Exception):
     pass
 

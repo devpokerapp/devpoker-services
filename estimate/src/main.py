@@ -5,3 +5,4 @@ from event.service import EventService
 from vote.service import VoteService
 from action.service import ActionService
 from polling.service import PollingService
+from invite.service import InviteService

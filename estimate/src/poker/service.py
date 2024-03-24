@@ -1,4 +1,5 @@
 import logging
+import datetime
 from typing import Union
 
 from nameko.rpc import rpc, RpcProxy
@@ -6,6 +7,8 @@ from nameko.rpc import rpc, RpcProxy
 from base.service import EntityService, QueryRead
 from poker.models import Poker
 from poker.schemas import PokerRead, PokerCreate, PokerUpdate, PokerContext
+from participant.models import Participant
+from invite.models import Invite
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -23,11 +26,21 @@ class PokerService(EntityService):
 
     story_rpc = RpcProxy("story_service")
     participant_rpc = RpcProxy("participant_service")
+    invite_rpc = RpcProxy("invite_service")
 
     def get_room_name(self, entity) -> str:
         poker: Poker = entity
         return str(poker.id)
 
+    @rpc
+    def start(self, sid, payload: dict) -> dict:
+        poker = self.create(sid=sid, payload=payload)
+        invite = self.invite_rpc.create(sid=sid, payload={
+            'pokerId': poker['id'],
+            'expiresAt': str(datetime.datetime.now() + datetime.timedelta(hours=1))
+        })
+        self.gateway_rpc.unicast(sid, 'poker_started', invite)
+    
     @rpc
     def join(self, sid: str, participant_id: str, poker_id: str):
         participant = self.participant_rpc.retrieve(sid=None, entity_id=participant_id)
