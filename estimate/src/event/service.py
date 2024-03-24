@@ -8,6 +8,7 @@ from base.converters import from_uuid, from_str, from_bool
 from base.service import EntityService
 from event.models import Event
 from event.schemas import EventRead, EventCreate, EventUpdate
+from story.models import Story
 from participant.models import Participant
 
 logger = logging.getLogger(__name__)
@@ -56,8 +57,13 @@ class EventService(EntityService):
         if not _system_event:
             creator = self._get_current_creator(sid)
 
-        dto = self.dto_create(**payload)
-        entity = self.model(creator=creator, **dto.model_dump())
+        dto = EventCreate(**payload)
+
+        story = self.db.query(Story).filter(Story.id == dto.story_id).first()
+        if story is None:
+            raise NotFound()
+
+        entity = self.model(creator=creator, poker_id=story.poker_id, **dto.model_dump())
 
         self.db.add(entity)
         self.db.commit()
