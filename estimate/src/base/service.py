@@ -86,7 +86,7 @@ class EntityService(BaseService):
     def get_room_name(self, entity) -> str:
         pass
 
-    def get_base_query(self):
+    def get_base_query(self, sid):
         """
         Used to apply filters to all queried data inside the service
         """
@@ -123,7 +123,7 @@ class EntityService(BaseService):
                 raise InvalidFilter(filter.attr)
             applied_filters.append(getattr(self.model, filter.attr) == converted_value)
 
-        entities = self.get_base_query() \
+        entities = self.get_base_query(sid=sid) \
             .filter(*applied_filters) \
             .all()
 
@@ -145,7 +145,7 @@ class EntityService(BaseService):
     def retrieve(self, sid, entity_id: str) -> dict:
         entity_id = UUID(entity_id)
 
-        entity = self.get_base_query() \
+        entity = self.get_base_query(sid=sid) \
             .filter(self.model.id == entity_id) \
             .first()
 
@@ -179,7 +179,7 @@ class EntityService(BaseService):
     def update(self, sid, entity_id: str, payload: dict) -> dict:
         entity_id = UUID(entity_id)
 
-        entity = self.get_base_query() \
+        entity = self.get_base_query(sid=sid) \
             .filter(self.model.id == entity_id) \
             .first()
 
@@ -206,7 +206,7 @@ class EntityService(BaseService):
     def delete(self, sid, entity_id: str) -> dict:
         entity_id = UUID(entity_id)
 
-        old = self.get_base_query() \
+        old = self.get_base_query(sid=sid) \
             .filter(self.model.id == entity_id) \
             .first()
 

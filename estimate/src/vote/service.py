@@ -40,8 +40,8 @@ class VoteService(EntityService):
         polling: Polling = vote.polling
         return f'story:{polling.story_id}'
 
-    def get_base_query(self):
-        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id()
+    def get_base_query(self, sid):
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id(sid)
         return self.db.query(Vote).filter(Vote.poker_id == current_poker_id)
 
     @rpc

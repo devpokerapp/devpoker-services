@@ -39,8 +39,8 @@ class ParticipantService(EntityService):
         participant: Participant = entity
         return str(participant.poker_id)
 
-    def get_base_query(self):
-        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id()
+    def get_base_query(self, sid):
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id(sid)
         return self.db.query(Participant).filter(Participant.poker_id == current_poker_id)
 
     @rpc

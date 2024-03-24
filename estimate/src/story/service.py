@@ -33,8 +33,8 @@ class StoryService(EntityService):
         story: Story = entity
         return str(story.poker_id)
 
-    def get_base_query(self):
-        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id()
+    def get_base_query(self, sid):
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id(sid)
         return self.db.query(Story).filter(Story.poker_id == current_poker_id)
 
     @event_handler("polling_service", "polling_completed")
