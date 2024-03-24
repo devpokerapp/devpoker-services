@@ -51,6 +51,7 @@ def test_when_querying_revealed_events_from_story_should_return_only_revealed_fr
     db_session.commit()
 
     service = worker_factory(EventService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id1
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 

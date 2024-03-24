@@ -25,6 +25,7 @@ def test_when_retrieving_polling_should_return_as_dict(db_session):
     db_session.commit()
 
     service = worker_factory(PollingService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -118,6 +119,7 @@ def test_when_completing_polling_should_return_completed_as_dict(db_session):
     db_session.commit()
 
     service = worker_factory(PollingService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -161,6 +163,7 @@ def test_when_trying_to_completing_non_existing_polling_should_cause_an_error(db
     db_session.commit()
 
     service = worker_factory(PollingService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 

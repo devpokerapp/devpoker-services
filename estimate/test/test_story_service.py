@@ -71,6 +71,7 @@ def test_when_retrieving_story_should_return_as_dict(db_session):
     db_session.commit()
 
     service = worker_factory(StoryService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -93,8 +94,10 @@ def test_when_retrieving_non_existing_story_should_return_error(db_session):
     # arrange
     fake_sid = '1aaa'
     fake_entity_id = uuid.uuid4()
+    fake_poker_id = uuid.uuid4()
 
     service = worker_factory(StoryService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -136,6 +139,7 @@ def test_when_updating_story_should_return_as_dict(db_session):
     db_session.commit()
 
     service = worker_factory(StoryService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -170,6 +174,7 @@ def test_when_updating_non_existing_story_should_cause_not_found_error(db_sessio
     }
 
     service = worker_factory(StoryService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -212,6 +217,7 @@ def test_when_deleting_story_should_return_as_dict(db_session):
     db_session.commit()
 
     service = worker_factory(StoryService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -241,6 +247,7 @@ def test_when_deleting_non_existing_story_should_cause_not_found_error(db_sessio
     fake_story_id = uuid.uuid4()
 
     service = worker_factory(StoryService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -283,6 +290,7 @@ def test_when_querying_stories_should_return_as_dict_with_list(db_session):
     db_session.commit()
 
     service = worker_factory(StoryService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -330,6 +338,7 @@ def test_when_querying_stories_with_same_poker_id_should_return_only_stories_rel
     db_session.commit()
 
     service = worker_factory(StoryService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id1
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -379,6 +388,7 @@ def test_when_querying_stories_from_poker_id_without_stories_should_return_empty
     db_session.commit()
 
     service = worker_factory(StoryService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id1
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 

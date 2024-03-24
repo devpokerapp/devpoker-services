@@ -38,6 +38,10 @@ class PollingService(EntityService):
         polling: Polling = entity
         return f'story:{str(polling.story_id)}'
 
+    def get_base_query(self):
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id()
+        return self.db.query(Polling).filter(Polling.poker_id == current_poker_id)
+
     @event_handler("story_service", "story_created")
     def handle_story_created(self, payload: dict):
         # crates a new polling for every new story

@@ -38,6 +38,10 @@ class ParticipantService(EntityService):
         participant: Participant = entity
         return str(participant.poker_id)
 
+    def get_base_query(self):
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id()
+        return self.db.query(Participant).filter(Participant.poker_id == current_poker_id)
+
     @rpc
     def create(self, sid, payload: dict) -> dict:
         dto = ParticipantCreateWithInvite(**payload)
@@ -65,6 +69,7 @@ class ParticipantService(EntityService):
     def update(self, sid, entity_id: str, payload: dict) -> dict:
         entity_id = UUID(entity_id)
 
+        # FIXME: currently any user can update participant ID
         entity = self.db.query(self.model) \
             .filter(self.model.id == entity_id) \
             .first()
@@ -87,6 +92,7 @@ class ParticipantService(EntityService):
 
     @rpc
     def current(self, sid) -> dict:
+        # CANNOT use get_base_query. that function uses this function, causing infinite recursion
         entity = self.db.query(self.model) \
             .filter(self.model.sid == sid) \
             .first()

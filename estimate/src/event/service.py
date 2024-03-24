@@ -1,5 +1,6 @@
 import typing
 import logging
+from uuid import UUID
 
 from nameko.rpc import rpc, RpcProxy
 
@@ -38,6 +39,10 @@ class EventService(EntityService):
     def get_room_name(self, entity) -> str:
         event: Event = entity
         return f'story:{event.story_id}'
+
+    def get_base_query(self):
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id()
+        return self.db.query(Event).filter(Event.poker_id == current_poker_id)
 
     def _get_current_creator(self, sid) -> str:
         participants = self.participant_rpc.query(sid=None, filters=[{

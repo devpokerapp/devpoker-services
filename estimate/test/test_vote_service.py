@@ -36,6 +36,7 @@ def test_when_retrieving_vote_should_return_as_dict(db_session):
     db_session.commit()
 
     service = worker_factory(VoteService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -161,6 +162,7 @@ def test_when_placing_vote_again_should_return_updated_vote_as_dict(db_session):
     service = worker_factory(VoteService, db=db_session)
     service.participant_rpc.current.side_effect = fake_participant_current
     service.polling_rpc.retrieve.side_effect = fake_polling_retrieve
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
