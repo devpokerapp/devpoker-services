@@ -68,7 +68,7 @@ class GatewayService:
     def get_current_poker_id(self, sid):
         participant = self.participant_rpc.current(sid)
         if participant is None:
-            return None\
+            return None
         return UUID(participant['pokerId'])
 
     @rpc
