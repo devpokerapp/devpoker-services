@@ -80,8 +80,13 @@ class VoteService(EntityService):
         participant = self.participant_rpc.current(sid=sid)
         participant_id = UUID(participant['id'])
 
-        dto = self.dto_create(**payload)
-        entity = self.model(participant_id=participant_id, **dto.model_dump())
+        dto = VoteCreate(**payload)
+
+        polling = self.db.query(Polling).filter(Polling.id == dto.polling_id).first()
+        if polling is None:
+            raise NotFound()
+
+        entity = self.model(participant_id=participant_id, poker_id=polling.poker_id, **dto.model_dump())
 
         self.db.add(entity)
         self.db.commit()
