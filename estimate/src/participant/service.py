@@ -5,7 +5,7 @@ from uuid import UUID
 from nameko.rpc import rpc, RpcProxy
 
 from base.converters import from_uuid, from_str
-from base.exceptions import NotFound
+from base.exceptions import NotFound, NotAllowed
 from base.service import EntityService
 from participant.models import Participant
 from participant.schemas import (ParticipantRead, ParticipantCreate, ParticipantUpdate, ParticipantCreateWithInvite,
@@ -69,14 +69,17 @@ class ParticipantService(EntityService):
     @rpc
     def update(self, sid, entity_id: str, payload: dict) -> dict:
         entity_id = UUID(entity_id)
+        dto = ParticipantUpdate(**payload)
 
-        # FIXME: currently any user can update participant ID
-        entity = self.db.query(self.model) \
-            .filter(self.model.id == entity_id) \
+        entity = self.db.query(Participant) \
+            .filter(Participant.id == entity_id) \
             .first()
 
         if entity is None:
             raise NotFound()
+
+        if entity.secret_key != dto.secret_key:
+            raise NotAllowed()
 
         # this method overrides default update to only update sid
         entity.sid = sid

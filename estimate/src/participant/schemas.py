@@ -34,4 +34,4 @@ class ParticipantCreated(ParticipantRead):
 
 
 class ParticipantUpdate(ParticipantCreate):
-    pass
+    secret_key: str
