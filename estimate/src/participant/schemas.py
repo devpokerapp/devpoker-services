@@ -35,3 +35,7 @@ class ParticipantCreated(ParticipantRead):
 
 class ParticipantUpdate(APIModel):
     secret_key: str
+
+
+class ParticipantJoin(APIModel):
+    secret_key: str

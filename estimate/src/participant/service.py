@@ -9,7 +9,7 @@ from base.exceptions import NotFound, NotAllowed
 from base.service import EntityService
 from participant.models import Participant
 from participant.schemas import (ParticipantRead, ParticipantCreate, ParticipantUpdate, ParticipantCreateWithInvite,
-                                 ParticipantCreated)
+                                 ParticipantCreated, ParticipantJoin)
 from participant.exceptions import InvalidInviteCode
 
 logger = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ class ParticipantService(EntityService):
     @rpc
     def join(self, sid, entity_id: str, payload: dict) -> dict:
         entity_id = UUID(entity_id)
-        dto = ParticipantUpdate(**payload)
+        dto = ParticipantJoin(**payload)
 
         entity = self.db.query(Participant) \
             .filter(Participant.id == entity_id) \
