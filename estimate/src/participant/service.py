@@ -8,7 +8,8 @@ from base.converters import from_uuid, from_str
 from base.exceptions import NotFound
 from base.service import EntityService
 from participant.models import Participant
-from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate, ParticipantCreateWithInvite
+from participant.schemas import (ParticipantRead, ParticipantCreate, ParticipantUpdate, ParticipantCreateWithInvite,
+                                 ParticipantCreated)
 from participant.exceptions import InvalidInviteCode
 
 logger = logging.getLogger(__name__)
@@ -59,7 +60,7 @@ class ParticipantService(EntityService):
 
         logger.debug(f'created "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
 
-        result = self.dto_read.to_json(entity)
+        result = ParticipantCreated.to_json(entity)
 
         self.handle_propagate(sid, self.event_created, entity, result)
 

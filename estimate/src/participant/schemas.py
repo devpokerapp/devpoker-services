@@ -29,5 +29,9 @@ class ParticipantCreate(APIModel):
     keycloak_user_id: Optional[str] = None
 
 
+class ParticipantCreated(ParticipantRead):
+    secret_key: str
+
+
 class ParticipantUpdate(ParticipantCreate):
     pass
