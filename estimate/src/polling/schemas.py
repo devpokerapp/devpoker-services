@@ -14,6 +14,7 @@ class PollingRead(APIModel):
     completed: bool
     revealed: bool
     story_id: UUID
+    poker_id: UUID
     votes: List[VoteRead] = None
 
 
