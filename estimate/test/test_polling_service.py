@@ -21,7 +21,7 @@ def test_when_retrieving_polling_should_return_as_dict(db_session):
     db_session.commit()
     db_session.add(Story(id=fake_story_id, name="Story 1", poker_id=fake_poker_id))
     db_session.commit()
-    db_session.add(Polling(id=fake_polling_id, story_id=fake_story_id))
+    db_session.add(Polling(id=fake_polling_id, story_id=fake_story_id, poker_id=fake_poker_id))
     db_session.commit()
 
     service = worker_factory(PollingService, db=db_session)
@@ -64,11 +64,11 @@ def test_when_getting_current_polling_should_return_last_not_completed_as_dict(d
     db_session.commit()
     db_session.add(Story(id=fake_story_id, name="Story 1", poker_id=fake_poker_id))
     db_session.commit()
-    db_session.add(Polling(id=fake_polling_id_completed, story_id=fake_story_id, completed=True, revealed=True))
-    db_session.add(Polling(id=fake_polling_id_opened1, story_id=fake_story_id, completed=False, revealed=True))
-    db_session.add(Polling(id=fake_polling_id_opened2, story_id=fake_story_id, completed=False, revealed=True))
+    db_session.add(Polling(id=fake_polling_id_completed, story_id=fake_story_id, poker_id=fake_poker_id, completed=True, revealed=True))
+    db_session.add(Polling(id=fake_polling_id_opened1, story_id=fake_story_id, poker_id=fake_poker_id, completed=False, revealed=True))
+    db_session.add(Polling(id=fake_polling_id_opened2, story_id=fake_story_id, poker_id=fake_poker_id, completed=False, revealed=True))
     db_session.commit()
-    db_session.add(Polling(id=fake_polling_id_current, story_id=fake_story_id, completed=False, revealed=True))
+    db_session.add(Polling(id=fake_polling_id_current, story_id=fake_story_id, poker_id=fake_poker_id, completed=False, revealed=True))
     db_session.commit()
 
     service = worker_factory(PollingService, db=db_session)
@@ -114,7 +114,7 @@ def test_when_completing_polling_should_return_completed_as_dict(db_session):
     db_session.commit()
     db_session.add(Story(id=fake_story_id, name="Story 1", poker_id=fake_poker_id))
     db_session.commit()
-    db_session.add(Polling(id=fake_polling_id, story_id=fake_story_id))
+    db_session.add(Polling(id=fake_polling_id, story_id=fake_story_id, poker_id=fake_poker_id))
     db_session.commit()
 
     service = worker_factory(PollingService, db=db_session)
