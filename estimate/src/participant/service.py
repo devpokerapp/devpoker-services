@@ -95,6 +95,40 @@ class ParticipantService(EntityService):
         return result
 
     @rpc
+    def join(self, sid, entity_id: str, payload: dict) -> dict:
+        entity_id = UUID(entity_id)
+        dto = ParticipantUpdate(**payload)
+
+        entity = self.db.query(Participant) \
+            .filter(Participant.id == entity_id) \
+            .first()
+
+        if entity is None:
+            raise NotFound()
+
+        if entity.secret_key != dto.secret_key:
+            raise NotAllowed()
+
+        # this method overrides default update to only update sid
+        entity.sid = sid
+
+        poker_id = str(entity.poker_id)
+
+        self.db.commit()
+
+        logger.debug(f'update "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
+
+        result = self.dto_read.to_json(entity)
+
+        self.handle_propagate(sid, self.event_updated, entity, result)
+
+        self.gateway_rpc.subscribe(sid, poker_id)
+        self.dispatch('poker_joined', result)
+        self.gateway_rpc.broadcast(poker_id, 'poker_joined', result)
+
+        return result
+
+    @rpc
     def current(self, sid) -> dict:
         # CANNOT use get_base_query. that function uses this function, causing infinite recursion
         entity = self.db.query(self.model) \

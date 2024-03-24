@@ -258,3 +258,68 @@ def test_when_updating_participant_with_wrong_secret_key_should_return_as_dict(d
     # assert
     with pytest.raises(NotAllowed):
         result = service.update(fake_sid, entity_id=str(fake_participant_id), payload=fake_payload)
+
+
+def test_when_joining_poker_should_subscribe_to_room(db_session):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id = uuid.uuid4()
+    fake_participant_id = uuid.uuid4()
+    fake_secret_key = 'foobarbazfoobarbazfoobarbazfoobarbazfoobarbazfoo'
+    fake_payload = {
+        'name': 'Arthur',
+        'pokerId': str(fake_poker_id),
+        'secretKey': fake_secret_key
+    }
+
+    db_session.add(Poker(id=fake_poker_id, creator='user@test.com'))
+    db_session.commit()
+    db_session.add(Participant(id=fake_participant_id, poker_id=fake_poker_id, name="Arthur", sid="2aaa",
+                               secret_key=fake_secret_key))
+    db_session.commit()
+
+    service = worker_factory(ParticipantService, db=db_session)
+    service.gateway_rpc.subscribe.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    result = service.join(fake_sid, entity_id=str(fake_participant_id), payload=fake_payload)
+
+    # assert
+    assert type(result) is dict
+    assert 'id' in result
+    assert type(result['id']) is str
+    assert result['id'] == str(fake_participant_id)  # defined in fake_participant
+    service.gateway_rpc.subscribe.assert_called_once()
+    service.gateway_rpc.broadcast.assert_called()
+    service.dispatch.assert_called()
+
+
+def test_when_joining_non_existing_user_in_poker_should_cause_error(db_session):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id = uuid.uuid4()
+    fake_participant_id = uuid.uuid4()
+    wrong_fake_participant_id = uuid.uuid4()
+    fake_secret_key = 'foobarbazfoobarbazfoobarbazfoobarbazfoobarbazfoo'
+    fake_payload = {
+        'name': 'Arthur',
+        'pokerId': str(fake_poker_id),
+        'secretKey': fake_secret_key
+    }
+
+    db_session.add(Poker(id=fake_poker_id, creator='user@test.com'))
+    db_session.commit()
+    db_session.add(Participant(id=fake_participant_id, poker_id=fake_poker_id, name="Arthur", sid="2aaa", secret_key=fake_secret_key))
+    db_session.commit()
+
+    service = worker_factory(ParticipantService, db=db_session)
+    service.gateway_rpc.subscribe.side_effect = lambda *args, **kwargs: None
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    # assert
+    with pytest.raises(NotFound):
+        result = service.join(fake_sid, entity_id=str(wrong_fake_participant_id), payload=fake_payload)

@@ -6,6 +6,7 @@ from typing import Union
 from nameko.rpc import rpc, RpcProxy
 
 from base.service import EntityService, QueryRead
+from base.exceptions import NotFound, NotAllowed
 from poker.models import Poker
 from poker.schemas import PokerRead, PokerCreate, PokerUpdate, PokerContext
 from participant.models import Participant
@@ -45,18 +46,6 @@ class PokerService(EntityService):
             'expiresAt': str(datetime.datetime.now() + datetime.timedelta(hours=1))
         })
         self.gateway_rpc.unicast(sid, 'poker_started', invite)
-    
-    @rpc
-    def join(self, sid: str, participant_id: str, poker_id: str):
-        participant = self.participant_rpc.retrieve(sid=None, entity_id=participant_id)
-        self.participant_rpc.update(sid=sid, entity_id=participant_id, payload={})
-
-        self.gateway_rpc.subscribe(sid, poker_id)
-
-        self.dispatch('poker_joined', participant)
-        self.gateway_rpc.broadcast(poker_id, 'poker_joined', participant)
-
-        return participant
 
     # TODO: leave event
 
