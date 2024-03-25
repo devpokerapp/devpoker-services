@@ -50,27 +50,6 @@ class PokerService(EntityService):
     # TODO: leave event
 
     @rpc
-    def context(self, sid: str, entity_id: str):
-        filters = [{
-            'attr': 'poker_id',
-            'value': entity_id,
-        }]
-
-        poker = self.retrieve(sid=None, entity_id=entity_id)
-        stories = self.story_rpc.query(sid=None, filters=filters)
-        participants = self.participant_rpc.query(sid=None, filters=filters)
-
-        stories = stories['items']
-        participants = participants['items']
-
-        result = PokerContext(poker=poker, stories=stories, participants=participants)
-        result = result.to_json()
-
-        self.gateway_rpc.unicast(sid, 'poker_context', result)
-
-        return result
-
-    @rpc
     def select_story(self, sid: str, poker_id: str, story_id: Union[str | None] = None):
         poker = self.retrieve(sid=None, entity_id=poker_id)
 
