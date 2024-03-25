@@ -40,5 +40,3 @@ class Event(Model):
     )
 
     story = relationship("Story", back_populates="events")
-
-    # TODO: maybe include a "group_key" to group events to a specific voting moment
