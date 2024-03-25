@@ -45,15 +45,7 @@ class EventService(EntityService):
         return self.db.query(Event).filter(Event.poker_id == current_poker_id)
 
     def _get_current_creator(self, sid) -> str:
-        participants = self.participant_rpc.query(sid=None, filters=[{
-            "attr": "sid",
-            "value": sid
-        }])
-
-        if len(participants) < 1:
-            raise NotFound()
-
-        participant = participants['items'][0]
+        participant = self.participant_rpc.current(sid)
         return str(participant['id'])
 
     @rpc
