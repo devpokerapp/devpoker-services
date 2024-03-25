@@ -33,6 +33,8 @@ class InviteService(EntityService):
         return str(invite.poker_id)
 
     def get_base_query(self, sid):
+        if sid is None:
+            return super().get_base_query(sid)
         current_poker_id: UUID = self.gateway_rpc.get_current_poker_id(sid)
         return self.db.query(Invite).filter(Invite.poker_id == current_poker_id)
     
