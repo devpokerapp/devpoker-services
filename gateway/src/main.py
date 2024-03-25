@@ -37,6 +37,9 @@ class GatewayService:
 
         logger.debug(f'called {service}:{method} by {sid}')
 
+        if sid is None:
+            return
+
         result = None
         error = None
         success = False
