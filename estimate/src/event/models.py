@@ -33,6 +33,10 @@ class Event(Model):
         nullable=False
     )
 
-    story = relationship("Story", back_populates="events")
+    poker_id = Column(
+        Uuid(),
+        ForeignKey("pokers.id", name="fk_events_poker_id"),
+        nullable=False
+    )
 
-    # TODO: maybe include a "group_key" to group events to a specific voting moment
+    story = relationship("Story", back_populates="events")

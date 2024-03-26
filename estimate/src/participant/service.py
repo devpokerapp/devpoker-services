@@ -5,10 +5,11 @@ from uuid import UUID
 from nameko.rpc import rpc, RpcProxy
 
 from base.converters import from_uuid, from_str
-from base.exceptions import NotFound
+from base.exceptions import NotFound, NotAllowed
 from base.service import EntityService
 from participant.models import Participant
-from participant.schemas import ParticipantRead, ParticipantCreate, ParticipantUpdate, ParticipantCreateWithInvite
+from participant.schemas import (ParticipantRead, ParticipantCreate, ParticipantUpdate, ParticipantCreateWithInvite,
+                                 ParticipantCreated, ParticipantJoin)
 from participant.exceptions import InvalidInviteCode
 
 logger = logging.getLogger(__name__)
@@ -38,6 +39,12 @@ class ParticipantService(EntityService):
         participant: Participant = entity
         return str(participant.poker_id)
 
+    def get_base_query(self, sid):
+        if sid is None:
+            return super().get_base_query(sid)
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id(sid)
+        return self.db.query(Participant).filter(Participant.poker_id == current_poker_id)
+
     @rpc
     def create(self, sid, payload: dict) -> dict:
         dto = ParticipantCreateWithInvite(**payload)
@@ -55,7 +62,7 @@ class ParticipantService(EntityService):
 
         logger.debug(f'created "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
 
-        result = self.dto_read.to_json(entity)
+        result = ParticipantCreated.to_json(entity)
 
         self.handle_propagate(sid, self.event_created, entity, result)
 
@@ -64,13 +71,17 @@ class ParticipantService(EntityService):
     @rpc
     def update(self, sid, entity_id: str, payload: dict) -> dict:
         entity_id = UUID(entity_id)
+        dto = ParticipantUpdate(**payload)
 
-        entity = self.db.query(self.model) \
-            .filter(self.model.id == entity_id) \
+        entity = self.db.query(Participant) \
+            .filter(Participant.id == entity_id) \
             .first()
 
         if entity is None:
             raise NotFound()
+
+        if entity.secret_key != dto.secret_key:
+            raise NotAllowed()
 
         # this method overrides default update to only update sid
         entity.sid = sid
@@ -86,7 +97,42 @@ class ParticipantService(EntityService):
         return result
 
     @rpc
+    def join(self, sid, entity_id: str, payload: dict) -> dict:
+        entity_id = UUID(entity_id)
+        dto = ParticipantJoin(**payload)
+
+        entity = self.db.query(Participant) \
+            .filter(Participant.id == entity_id) \
+            .first()
+
+        if entity is None:
+            raise NotFound()
+
+        if entity.secret_key != dto.secret_key:
+            raise NotAllowed()
+
+        # this method overrides default update to only update sid
+        entity.sid = sid
+
+        poker_id = str(entity.poker_id)
+
+        self.db.commit()
+
+        logger.debug(f'update "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
+
+        result = self.dto_read.to_json(entity)
+
+        self.handle_propagate(sid, self.event_updated, entity, result)
+
+        self.gateway_rpc.subscribe(sid, poker_id)
+        self.dispatch('poker_joined', result)
+        self.gateway_rpc.broadcast(poker_id, 'poker_joined', result)
+
+        return result
+
+    @rpc
     def current(self, sid) -> dict:
+        # CANNOT use get_base_query. that function uses this function, causing infinite recursion
         entity = self.db.query(self.model) \
             .filter(self.model.sid == sid) \
             .first()

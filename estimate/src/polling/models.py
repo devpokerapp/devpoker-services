@@ -30,4 +30,10 @@ class Polling(Model):
         nullable=False
     )
 
+    poker_id = Column(
+        Uuid(),
+        ForeignKey("pokers.id", name="fk_pollings_poker_id"),
+        nullable=False
+    )
+
     story = relationship("Story", backref=backref("pollings", cascade="all, delete-orphan", order_by='Polling.created_at'))

@@ -29,5 +29,13 @@ class ParticipantCreate(APIModel):
     keycloak_user_id: Optional[str] = None
 
 
-class ParticipantUpdate(ParticipantCreate):
-    pass
+class ParticipantCreated(ParticipantRead):
+    secret_key: str
+
+
+class ParticipantUpdate(APIModel):
+    secret_key: str
+
+
+class ParticipantJoin(APIModel):
+    secret_key: str

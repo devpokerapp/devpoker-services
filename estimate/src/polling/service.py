@@ -11,8 +11,8 @@ from base.converters import from_uuid, from_bool
 from base.service import EntityService
 from polling.models import Polling
 from polling.schemas import PollingRead, PollingCreate, PollingUpdate, PollingComplete
+from story.models import Story
 
-# TODO: global logger instance
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -38,12 +38,39 @@ class PollingService(EntityService):
         polling: Polling = entity
         return f'story:{str(polling.story_id)}'
 
+    def get_base_query(self, sid):
+        if sid is None:
+            return super().get_base_query(sid)
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id(sid)
+        return self.db.query(Polling).filter(Polling.poker_id == current_poker_id)
+
     @event_handler("story_service", "story_created")
     def handle_story_created(self, payload: dict):
         # crates a new polling for every new story
         self.create(sid=None, payload={
             "storyId": payload['id']
         })
+
+    @rpc
+    def create(self, sid, payload: dict) -> dict:
+        dto = PollingCreate(**payload)
+
+        story = self.db.query(Story).filter(Story.id == dto.story_id).first()
+        if story is None:
+            raise NotFound()
+
+        entity = self.model(poker_id=story.poker_id, **dto.model_dump())
+
+        self.db.add(entity)
+        self.db.commit()
+
+        logger.debug(f'created "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
+
+        result = self.dto_read.to_json(entity)
+
+        self.handle_propagate(sid, self.event_created, entity, result)
+
+        return result
 
     @rpc
     def current(self, sid, story_id):

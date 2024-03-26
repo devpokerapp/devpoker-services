@@ -40,6 +40,12 @@ class VoteService(EntityService):
         polling: Polling = vote.polling
         return f'story:{polling.story_id}'
 
+    def get_base_query(self, sid):
+        if sid is None:
+            return super().get_base_query(sid)
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id(sid)
+        return self.db.query(Vote).filter(Vote.poker_id == current_poker_id)
+
     @rpc
     def place(self, sid, payload: dict):
         dto = VotePlace(**payload)
@@ -80,8 +86,13 @@ class VoteService(EntityService):
         participant = self.participant_rpc.current(sid=sid)
         participant_id = UUID(participant['id'])
 
-        dto = self.dto_create(**payload)
-        entity = self.model(participant_id=participant_id, **dto.model_dump())
+        dto = VoteCreate(**payload)
+
+        polling = self.db.query(Polling).filter(Polling.id == dto.polling_id).first()
+        if polling is None:
+            raise NotFound()
+
+        entity = self.model(participant_id=participant_id, poker_id=polling.poker_id, **dto.model_dump())
 
         self.db.add(entity)
         self.db.commit()

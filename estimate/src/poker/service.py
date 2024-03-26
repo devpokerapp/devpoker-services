@@ -1,10 +1,12 @@
 import logging
 import datetime
+from uuid import UUID
 from typing import Union
 
 from nameko.rpc import rpc, RpcProxy
 
 from base.service import EntityService, QueryRead
+from base.exceptions import NotFound, NotAllowed
 from poker.models import Poker
 from poker.schemas import PokerRead, PokerCreate, PokerUpdate, PokerContext
 from participant.models import Participant
@@ -32,6 +34,12 @@ class PokerService(EntityService):
         poker: Poker = entity
         return str(poker.id)
 
+    def get_base_query(self, sid):
+        if sid is None:
+            return super().get_base_query(sid)
+        current_poker_id: UUID = self.gateway_rpc.get_current_poker_id(sid)
+        return self.db.query(Poker).filter(Poker.id == current_poker_id)
+
     @rpc
     def start(self, sid, payload: dict) -> dict:
         poker = self.create(sid=sid, payload=payload)
@@ -40,41 +48,8 @@ class PokerService(EntityService):
             'expiresAt': str(datetime.datetime.now() + datetime.timedelta(hours=1))
         })
         self.gateway_rpc.unicast(sid, 'poker_started', invite)
-    
-    @rpc
-    def join(self, sid: str, participant_id: str, poker_id: str):
-        participant = self.participant_rpc.retrieve(sid=None, entity_id=participant_id)
-        self.participant_rpc.update(sid=sid, entity_id=participant_id, payload={})
-
-        self.gateway_rpc.subscribe(sid, poker_id)
-
-        self.dispatch('poker_joined', participant)
-        self.gateway_rpc.broadcast(poker_id, 'poker_joined', participant)
-
-        return participant
 
     # TODO: leave event
-
-    @rpc
-    def context(self, sid: str, entity_id: str):
-        filters = [{
-            'attr': 'poker_id',
-            'value': entity_id,
-        }]
-
-        poker = self.retrieve(sid=None, entity_id=entity_id)
-        stories = self.story_rpc.query(sid=None, filters=filters)
-        participants = self.participant_rpc.query(sid=None, filters=filters)
-
-        stories = stories['items']
-        participants = participants['items']
-
-        result = PokerContext(poker=poker, stories=stories, participants=participants)
-        result = result.to_json()
-
-        self.gateway_rpc.unicast(sid, 'poker_context', result)
-
-        return result
 
     @rpc
     def select_story(self, sid: str, poker_id: str, story_id: Union[str | None] = None):

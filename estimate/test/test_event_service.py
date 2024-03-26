@@ -42,15 +42,16 @@ def test_when_querying_revealed_events_from_story_should_return_only_revealed_fr
     db_session.add(Story(id=fake_story_id2, name="Story 2", poker_id=fake_poker_id1))
     db_session.add(Story(id=fake_story_id3, name="Story from other poker", poker_id=fake_poker_id2))
     db_session.commit()
-    db_session.add(Event(id=fake_event_id_revealed, story_id=fake_story_id1, type="vote",
-                         revealed=True, content="5", creator="user1"))
-    db_session.add(Event(id=fake_event_id_not_revealed, story_id=fake_story_id1, type="vote",
-                         revealed=False, content="2", creator="user1"))
-    db_session.add(Event(id=fake_event_id_not_revealed_from_another, story_id=fake_story_id2, type="vote",
-                         revealed=False, content="2", creator="user1"))
+    db_session.add(Event(id=fake_event_id_revealed, story_id=fake_story_id1, poker_id=fake_poker_id1,
+                         type="vote", revealed=True, content="5", creator="user1"))
+    db_session.add(Event(id=fake_event_id_not_revealed, story_id=fake_story_id1, poker_id=fake_poker_id1,
+                         type="vote", revealed=False, content="2", creator="user1"))
+    db_session.add(Event(id=fake_event_id_not_revealed_from_another, story_id=fake_story_id2, poker_id=fake_poker_id1,
+                         type="vote", revealed=False, content="2", creator="user1"))
     db_session.commit()
 
     service = worker_factory(EventService, db=db_session)
+    service.gateway_rpc.get_current_poker_id.side_effect = lambda *args, **kwargs: fake_poker_id1
     service.gateway_rpc.unicast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -91,7 +92,8 @@ def test_when_creating_event_should_return_as_dict(db_session, monkeypatch):
         "type": "vote",
         "content": "5",
         "revealed": "false",
-        "story_id": str(fake_story_id1)
+        "story_id": str(fake_story_id1),
+        "poker_id": str(fake_poker_id1)
     }
 
     db_session.add(Poker(id=fake_poker_id1, creator='user@test.com'))
@@ -183,20 +185,16 @@ def test_when_creating_event_with_valid_participant_should_return_dict(db_sessio
     db_session.add(Participant(id=fake_participant_id, poker_id=fake_poker_id1, name="Arthur", sid=fake_sid))
     db_session.commit()
 
-    def fake_query_participants(*args, **kwargs):
+    def fake_current_participant(*args, **kwargs):
         return {
-            "items": [
-                {
-                    "id": str(fake_participant_id),
-                    "pokerId": str(fake_poker_id1),
-                    "name": "Arthur",
-                    "sid": fake_sid
-                }
-            ]
+            "id": str(fake_participant_id),
+            "pokerId": str(fake_poker_id1),
+            "name": "Arthur",
+            "sid": fake_sid
         }
 
     service = worker_factory(EventService, db=db_session)
-    service.participant_rpc.query.side_effect = fake_query_participants
+    service.participant_rpc.current.side_effect = fake_current_participant
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 
@@ -241,11 +239,11 @@ def test_when_creating_event_with_non_existing_participant_should_cause_error(db
     db_session.add(Participant(id=fake_participant_id, poker_id=fake_poker_id1, name="Arthur", sid=fake_sid))
     db_session.commit()
 
-    def fake_query_participants(*args, **kwargs):
-        return []
+    def fake_current_participant(*args, **kwargs):
+        raise NotFound()
 
     service = worker_factory(EventService, db=db_session)
-    service.participant_rpc.query.side_effect = fake_query_participants
+    service.participant_rpc.current.side_effect = fake_current_participant
     service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
     service.dispatch.side_effect = lambda *args, **kwargs: None
 

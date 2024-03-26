@@ -24,5 +24,11 @@ class Vote(Model):
         nullable=False
     )
 
+    poker_id = Column(
+        Uuid(),
+        ForeignKey("pokers.id", name="fk_votes_poker_id"),
+        nullable=False
+    )
+
     participant = relationship("Participant", back_populates="votes")
     polling = relationship("Polling", backref=backref("votes", cascade="all, delete-orphan"))

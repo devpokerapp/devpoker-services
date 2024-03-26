@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Uuid, ForeignKey
 from sqlalchemy.orm import relationship
 from base.models import Model
+from participant.secret import generate_secret
 
 
 class Participant(Model):
@@ -19,6 +20,12 @@ class Participant(Model):
     keycloak_user_id = Column(
         String(),
         nullable=True
+    )
+
+    secret_key = Column(
+        String(),
+        nullable=False,
+        default=generate_secret
     )
 
     poker_id = Column(

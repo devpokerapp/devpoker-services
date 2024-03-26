@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 from nameko.rpc import rpc, RpcProxy
 from nameko.exceptions import RemoteError
 from nameko.web.websocket import rpc as ws, WebSocketHub, WebSocketHubProvider
@@ -36,6 +37,9 @@ class GatewayService:
 
         logger.debug(f'called {service}:{method} by {sid}')
 
+        if sid is None:
+            return
+
         result = None
         error = None
         success = False
@@ -62,6 +66,13 @@ class GatewayService:
             'error': error,
             'transaction_id': transaction_id,
         }
+    
+    @rpc
+    def get_current_poker_id(self, sid):
+        participant = self.participant_rpc.current(sid)
+        if participant is None:
+            return None
+        return UUID(participant['pokerId'])
 
     @rpc
     def unicast(self, sid, event, data):

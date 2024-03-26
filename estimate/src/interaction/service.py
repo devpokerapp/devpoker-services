@@ -12,6 +12,6 @@ class InteractionService:
     gateway_rpc = RpcProxy('gateway_service')
     dispatch = EventDispatcher()
 
-    # TODO: handle events and throw to poker room
+    # handle events and throw to poker room
     # story create, update, delete
     # poker join?

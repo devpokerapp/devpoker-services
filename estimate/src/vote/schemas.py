@@ -17,6 +17,7 @@ class VoteRead(APIModel):
     value: str
     participant_id: UUID
     polling_id: UUID
+    poker_id: UUID
     participant: ParticipantRead = None
 
 

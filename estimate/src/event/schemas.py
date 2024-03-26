@@ -17,6 +17,7 @@ class EventRead(APIModel):
     creator: str
     revealed: bool
     story_id: UUID
+    poker_id: UUID
 
 
 class EventCreate(APIModel):
