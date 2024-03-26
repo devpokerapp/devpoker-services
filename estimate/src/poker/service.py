@@ -5,7 +5,8 @@ from typing import Union
 
 from nameko.rpc import rpc, RpcProxy
 
-from base.service import EntityService, QueryRead
+from base.service import EntityService
+from base.schemas import SimpleListing
 from base.exceptions import NotFound, NotAllowed
 from poker.models import Poker
 from poker.schemas import PokerRead, PokerCreate, PokerUpdate, PokerContext
@@ -69,3 +70,22 @@ class PokerService(EntityService):
         self.dispatch('poker_selected_story', story)
 
         return story
+
+    @rpc
+    def history(self, sid: str, keycloak_id: str):
+        entities = self.db.query(Poker) \
+            .join(Participant, Poker.id == Participant.poker_id) \
+            .filter(Participant.keycloak_user_id == keycloak_id) \
+            .order_by(Poker.created_at.desc()) \
+            .all()
+
+        items = []
+        for entity in entities:
+            items.append(self.dto_read.to_json(entity))
+
+        result = SimpleListing(items=items)
+        result = result.to_json()
+
+        self.gateway_rpc.unicast(sid, 'poker_queried_history', result)
+
+        return result

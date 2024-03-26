@@ -36,3 +36,7 @@ class QueryMetadata(SimpleModel):
 class QueryRead(SimpleModel):
     items: list
     metadata: QueryMetadata
+
+
+class SimpleListing(SimpleModel):
+    items: list
