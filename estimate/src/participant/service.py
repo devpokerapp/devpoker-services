@@ -1,3 +1,4 @@
+import datetime
 import logging
 import typing
 from uuid import UUID
@@ -113,12 +114,13 @@ class ParticipantService(EntityService):
 
         # this method overrides default update to only update sid
         entity.sid = sid
+        entity.updated_at = datetime.datetime.utcnow()  # forces updated_at change
 
         poker_id = str(entity.poker_id)
 
         self.db.commit()
 
-        logger.debug(f'update "{self.entity_name}" entity! {entity.id}; {entity.to_dict()}')
+        logger.debug(f'join participant! {entity.id}; {entity.to_dict()}')
 
         result = self.dto_read.to_json(entity)
 
@@ -132,9 +134,20 @@ class ParticipantService(EntityService):
 
     @rpc
     def current(self, sid) -> dict:
-        # CANNOT use get_base_query. that function uses this function, causing infinite recursion
-        entity = self.db.query(self.model) \
-            .filter(self.model.sid == sid) \
+        """
+        Finds the current participant used by a certain SID. This is useful to discover which poker session is being
+        interacted.
+        """
+
+        """
+        It's impossible to have more than one poker session being interacted in the same connection. But it's possible
+        that the SID value repeats to many participants (e.g. if the user joins multiple sessions without resetting
+        it's connection). So must consider updated_at in order to find the lastest logged participant with this SID.
+        """
+        # WARN: CANNOT use get_base_query. that function uses this function, causing infinite recursion
+        entity = self.db.query(Participant) \
+            .filter(Participant.sid == sid) \
+            .order_by(Participant.updated_at.desc()) \
             .first()
 
         if entity is None:
