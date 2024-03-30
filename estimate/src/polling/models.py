@@ -24,6 +24,12 @@ class Polling(Model):
         default=False
     )
 
+    anonymous = Column(
+        Boolean(),
+        nullable=False,
+        server_default='false'
+    )
+
     story_id = Column(
         Uuid(),
         ForeignKey("stories.id", name="fk_pollings_story_id", ondelete="CASCADE"),

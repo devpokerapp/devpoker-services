@@ -59,7 +59,7 @@ class PollingService(EntityService):
         if story is None:
             raise NotFound()
 
-        entity = self.model(poker_id=story.poker_id, **dto.model_dump())
+        entity = self.model(poker_id=story.poker_id, anonymous=story.poker.anonymous_voting, **dto.model_dump())
 
         self.db.add(entity)
         self.db.commit()
@@ -99,6 +99,7 @@ class PollingService(EntityService):
             "value": dto.value,
             "completed": True,
             "revealed": True,
+            "anonymous": original["anonymous"],
             "storyId": original["storyId"],
         })
 
@@ -131,3 +132,31 @@ class PollingService(EntityService):
         room_name = f'story:{story_id}'
         self.dispatch('polling_restarted', result)
         self.gateway_rpc.broadcast(room_name, 'polling_restarted', result)
+
+    @event_handler("poker_service", "poker_updated")
+    def handle_poker_updated(self, payload: dict):
+        poker_id = payload['id']
+        poker_id = UUID(poker_id)
+
+        anonymous = payload['anonymousVoting']
+
+        uncompleted_pollings = self.db.query(Polling) \
+            .filter(Polling.poker_id == poker_id) \
+            .filter(Polling.completed == False) \
+            .filter(Polling.revealed == False)
+
+        polling_ids = []
+
+        for entity in uncompleted_pollings:
+            entity: Polling = entity
+            entity.anonymous = anonymous
+            self.db.commit()
+
+            polling_ids.append(str(entity.id))
+
+            serialized = self.dto_read.to_json(entity)
+            room_name = self.get_room_name(entity)
+            self.dispatch('polling_updated', serialized)
+            self.gateway_rpc.broadcast(room_name, 'polling_updated', serialized)
+
+        logger.debug(f'updated pollings based on poker change! anonymous={anonymous}; {polling_ids};')

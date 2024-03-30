@@ -14,6 +14,7 @@ class PokerCreate(APIModel):
 
 class PokerUpdate(PokerCreate):
     vote_pattern: str
+    anonymous_voting: bool
     current_story_id: Optional[UUID]
 
 
@@ -23,6 +24,7 @@ class PokerRead(APIModel):
     updated_at: datetime
     creator: str
     vote_pattern: str
+    anonymous_voting: bool
     current_story_id: Optional[UUID]
     stories: List[StoryRead] = None
     participants: List[ParticipantRead] = None

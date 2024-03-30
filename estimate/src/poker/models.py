@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Uuid, ForeignKey
+from sqlalchemy import Column, String, Uuid, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from base.models import Model
 
@@ -11,7 +11,17 @@ class Poker(Model):
         nullable=False
     )
 
-    vote_pattern = Column(String(), nullable=False, server_default="0,1,2,3,5,8,13,?,__coffee")
+    vote_pattern = Column(
+        String(),
+        nullable=False,
+        server_default="0,1,2,3,5,8,13,?,__coffee"
+    )
+
+    anonymous_voting = Column(
+        Boolean(),
+        nullable=False,
+        server_default='false'
+    )
 
     current_story_id = Column(
         Uuid(),
