@@ -217,3 +217,49 @@ def test_when_creating_polling_should_get_poker_id_from_story(db_session):
     assert result['revealed'] is False
     service.gateway_rpc.broadcast.assert_called_once()
     service.dispatch.assert_called_once()
+
+
+def test_when_creating_polling_with_anonymous_poker_should_create_anonymous_polling(db_session):
+    # arrange
+    fake_sid = '1aaa'
+    fake_poker_id = uuid.uuid4()
+    fake_story_id = uuid.uuid4()
+    fake_payload = {
+        "story_id": str(fake_story_id)
+    }
+
+    db_session.add(Poker(id=fake_poker_id, creator='user@test.com', anonymous_voting=True))
+    db_session.commit()
+    db_session.add(Story(id=fake_story_id, name="Story 1", poker_id=fake_poker_id))
+    db_session.commit()
+
+    service = worker_factory(PollingService, db=db_session)
+    service.gateway_rpc.broadcast.side_effect = lambda *args, **kwargs: None
+    service.dispatch.side_effect = lambda *args, **kwargs: None
+
+    # act
+    result = service.create(fake_sid, fake_payload)
+
+    # assert
+    assert type(result) is dict
+    assert 'id' in result
+    assert type(result['id']) is str
+    assert 'storyId' in result
+    assert type(result['storyId']) is str
+    assert result['storyId'] == str(fake_story_id)
+    assert 'pokerId' in result
+    assert type(result['pokerId']) is str
+    assert result['pokerId'] == str(fake_poker_id)
+    assert 'anonymous' in result
+    assert type(result['anonymous']) is bool
+    assert result['anonymous'] is True
+    assert 'votes' in result
+    assert type(result['votes']) is list
+    assert 'value' in result
+    assert result['value'] is None
+    assert 'completed' in result
+    assert result['completed'] is False
+    assert 'revealed' in result
+    assert result['revealed'] is False
+    service.gateway_rpc.broadcast.assert_called_once()
+    service.dispatch.assert_called_once()

@@ -59,7 +59,7 @@ class PollingService(EntityService):
         if story is None:
             raise NotFound()
 
-        entity = self.model(poker_id=story.poker_id, **dto.model_dump())
+        entity = self.model(poker_id=story.poker_id, anonymous=story.poker.anonymous_voting, **dto.model_dump())
 
         self.db.add(entity)
         self.db.commit()
