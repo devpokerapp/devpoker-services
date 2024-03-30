@@ -54,18 +54,24 @@ class PokerService(EntityService):
 
     @rpc
     def select_story(self, sid: str, poker_id: str, story_id: Union[str | None] = None):
-        poker = self.retrieve(sid=None, entity_id=poker_id)
+        poker = self.get_base_query(sid=sid) \
+            .filter(Poker.id == UUID(poker_id)) \
+            .first()
+
+        if poker is None:
+            return NotFound()
 
         story = None
         if story_id is not None:
             story = self.story_rpc.retrieve(sid=None, entity_id=story_id)
+            story_id = UUID(story_id)
 
-        updated = self.update(sid=None, entity_id=poker_id, payload={
-            "creator": poker['creator'],
-            "vote_pattern": poker['votePattern'],
-            "current_story_id": story_id
-        })
+        poker.current_story_id = story_id
+        self.db.commit()
 
+        serialized_poker = self.dto_read.to_json(poker)
+
+        self.handle_propagate(sid, self.event_updated, poker, serialized_poker)
         self.gateway_rpc.broadcast(poker_id, 'poker_selected_story', story)
         self.dispatch('poker_selected_story', story)
 
