@@ -12,6 +12,7 @@ class StoryRead(APIModel):
     created_at: datetime
     updated_at: datetime
     name: str
+    order: int
     poker_id: UUID
     description: Optional[str] = None
     value: Optional[str] = None
@@ -27,4 +28,4 @@ class StoryCreate(APIModel):
 
 
 class StoryUpdate(StoryCreate):
-    pass
+    order: int

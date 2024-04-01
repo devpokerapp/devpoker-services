@@ -50,6 +50,7 @@ class StoryService(EntityService):
             "name": story["name"],
             "description": story["description"],
             "pokerId": story["pokerId"],
+            "order": story["order"],
             "value": value
         })
 
