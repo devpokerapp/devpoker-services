@@ -37,7 +37,9 @@ class StoryService(EntityService):
         if sid is None:
             return super().get_base_query(sid)
         current_poker_id: UUID = self.gateway_rpc.get_current_poker_id(sid)
-        return self.db.query(Story).filter(Story.poker_id == current_poker_id)
+        return self.db.query(Story) \
+            .filter(Story.poker_id == current_poker_id) \
+            .order_by(Story.order)
 
     @event_handler("polling_service", "polling_completed")
     def handle_polling_completed(self, payload: dict):
