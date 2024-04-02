@@ -130,7 +130,8 @@ def test_when_updating_story_should_return_as_dict(db_session):
     fake_payload = {
         'id': str(fake_story_id),
         'name': 'Revised Story 1',
-        'pokerId': str(fake_poker_id)
+        'pokerId': str(fake_poker_id),
+        'order': 100
     }
 
     db_session.add(Poker(id=fake_poker_id, creator='user@test.com'))

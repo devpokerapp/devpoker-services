@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Uuid, ForeignKey
+from sqlalchemy import Column, String, Uuid, ForeignKey, Integer, select, func, table
 from sqlalchemy.orm import relationship
 
 from base.models import Model
@@ -20,6 +20,12 @@ class Story(Model):
     value = Column(
         String(),
         nullable=True
+    )
+
+    order = Column(
+        Integer(),
+        nullable=False,
+        default=select(func.count()).select_from(table('stories'))
     )
 
     poker_id = Column(
